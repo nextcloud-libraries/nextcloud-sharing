@@ -9,4 +9,5 @@ export enum Type {
     SHARE_TYPE_REMOTE_GROUP = 9,
     SHARE_TYPE_ROOM = 10,
     SHARE_TYPE_DECK = 12,
+    SHARE_TYPE_FEDERATED_GROUP = 14,
 }
