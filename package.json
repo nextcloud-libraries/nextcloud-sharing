@@ -1,35 +1,46 @@
 {
   "name": "@nextcloud/sharing",
   "version": "0.1.0",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "babel ./lib --out-dir dist --extensions '.ts,.tsx' --source-maps && tsc --emitDeclarationOnly",
-    "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
-    "check-types": "tsc",
-    "dev": "babel ./lib --out-dir dist --extensions '.ts,.tsx' --watch",
-    "test": "jest",
-    "test:watch": "jest --watchAll"
-  },
+  "description": "Front-end utilities for Nextcloud files sharing",
   "keywords": [
     "nextcloud"
   ],
   "author": "Christoph Wurst",
   "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "core-js": "^3.6.4"
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
   },
+  "main": "dist/index.cjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "LICENSE",
     "CHANGELOG.md",
     "README.md"
   ],
+  "scripts": {
+    "build": "vite --mode production build",
+    "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
+    "dev": "vite --mode development build",
+    "dev:watch": "vite --mode development build --watch",
   },
   "browserslist": [
     "extends @nextcloud/browserslist-config"
   ],
+  "devDependencies": {
+    "@nextcloud/browserslist-config": "^3.0.1",
+    "@nextcloud/vite-config": "^2.0.2",
+    "@types/node": "^20.14.5",
+    "typedoc": "^0.25.13",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+  },
   "engines": {
     "node": "^20.0.0",
     "npm": "^9.0.0"
