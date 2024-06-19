@@ -29,14 +29,21 @@
     "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
     "dev": "vite --mode development build",
     "dev:watch": "vite --mode development build --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
   },
   "browserslist": [
     "extends @nextcloud/browserslist-config"
   ],
+  "eslintConfig": {
+    "extends": "@nextcloud/eslint-config/typescript"
+  },
   "devDependencies": {
     "@nextcloud/browserslist-config": "^3.0.1",
+    "@nextcloud/eslint-config": "^8.4.1",
     "@nextcloud/vite-config": "^2.0.2",
     "@types/node": "^20.14.5",
+    "eslint": "^8.57.0",
     "typedoc": "^0.25.13",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
