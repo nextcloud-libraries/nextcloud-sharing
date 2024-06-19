@@ -1,39 +1,69 @@
 {
   "name": "@nextcloud/sharing",
   "version": "0.1.0",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "babel ./lib --out-dir dist --extensions '.ts,.tsx' --source-maps && tsc --emitDeclarationOnly",
-    "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
-    "check-types": "tsc",
-    "dev": "babel ./lib --out-dir dist --extensions '.ts,.tsx' --watch",
-    "test": "jest",
-    "test:watch": "jest --watchAll"
-  },
+  "description": "Front-end utilities for Nextcloud files sharing",
   "keywords": [
     "nextcloud"
   ],
-  "author": "Christoph Wurst",
   "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "core-js": "^3.6.4"
+  "author": "Christoph Wurst",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
   },
-  "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.8.7",
-    "@babel/preset-env": "^7.8.7",
-    "@babel/preset-typescript": "^7.8.3",
-    "@nextcloud/browserslist-config": "^2.1.0",
-    "typedoc": "^0.23.24",
-    "typescript": "^4.0.2"
+  "main": "dist/index.cjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite --mode production build",
+    "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
+    "dev": "vite --mode development build",
+    "dev:watch": "vite --mode development build --watch",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "eslint lib *.ts",
+    "lint:fix": "eslint --fix lib *.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest run --watch"
   },
   "browserslist": [
     "extends @nextcloud/browserslist-config"
   ],
+  "prettier": "@nextcloud/prettier-config",
+  "eslintConfig": {
+    "extends": [
+      "@nextcloud/eslint-config/typescript",
+      "prettier"
+    ]
+  },
+  "devDependencies": {
+    "@nextcloud/browserslist-config": "^3.0.1",
+    "@nextcloud/eslint-config": "^8.4.1",
+    "@nextcloud/prettier-config": "^1.1.0",
+    "@nextcloud/vite-config": "^2.0.2",
+    "@types/node": "^20.14.5",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.2",
+    "typedoc": "^0.25.13",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vitest": "^1.6.0"
+  },
   "engines": {
     "node": "^20.0.0",
-    "npm": "^9.0.0"
+    "npm": "^10.0.0"
   }
 }
