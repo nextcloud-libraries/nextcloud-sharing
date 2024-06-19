@@ -11,7 +11,9 @@ import { join } from 'node:path'
 export default createLibConfig(
 	{
 		index: join(__dirname, 'lib', 'index.ts'),
-	}, {
+		public: join(__dirname, 'lib', 'publicShare.ts'),
+	},
+	{
 		config: {
 			test: {
 				coverage: {
