@@ -1,5 +1,6 @@
 {
 	"include": ["lib/**/*.ts"],
+	"exclude": ["lib/**/*.spec.ts"],
 	"compilerOptions": {
 		"rootDir": "lib",
 		"target": "ESNext",
