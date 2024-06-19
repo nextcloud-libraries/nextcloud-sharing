@@ -14,6 +14,9 @@ export default createLibConfig(
 		public: join(__dirname, 'lib', 'publicShare.ts'),
 	},
 	{
+		DTSPluginOptions: {
+			rollupTypes: true,
+		},
 		config: {
 			test: {
 				coverage: {
