@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.1 - 2024-06-20
+
+### Fixed
+
+-   fix: Correctly add exports of `public` entry point \([\#30](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/30)\)
+-   fix: Do not include test files in `dist` \([\#27](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/27)\)
+
+### Changed
+
+-   ci: Add prettier also to CI \([\#27](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/29)\)
+-   chore: Fix docs to correctly name `public` module \([\#28](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/28)\)
+
 ## 0.2.0 - 2024-06-19
 
 ### Added
