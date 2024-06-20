@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.2 - 2024-06-20
+
+### Fixed
+
+-   fix: Do not add `default` export specifier
+
 ## 0.2.1 - 2024-06-20
 
 ### Fixed
