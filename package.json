@@ -14,6 +14,12 @@
       "default": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./public": {
+      "types": "./dist/public.d.ts",
+      "default": "./dist/public.mjs",
+      "import": "./dist/public.mjs",
+      "require": "./dist/public.cjs"
     }
   },
   "main": "dist/index.cjs",
