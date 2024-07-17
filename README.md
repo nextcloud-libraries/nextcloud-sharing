@@ -1,5 +1,11 @@
+<!--
+  - SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # `@nextcloud/sharing`
 
+[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud-libraries/nextcloud-sharing)](https://api.reuse.software/info/github.com/nextcloud-libraries/nextcloud-sharing)
 [![npm](https://img.shields.io/npm/v/@nextcloud/sharing.svg)](https://www.npmjs.com/package/@nextcloud/sharing)
 
 Common front-end utils for files sharing on Nextcloud and Nextcloud apps.
