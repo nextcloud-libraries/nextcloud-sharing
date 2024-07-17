@@ -1,3 +1,7 @@
+<!--
+  - SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: GPL-3.0-or-later
+-->
 # `@nextcloud/sharing`
 
 [![npm](https://img.shields.io/npm/v/@nextcloud/sharing.svg)](https://www.npmjs.com/package/@nextcloud/sharing)
