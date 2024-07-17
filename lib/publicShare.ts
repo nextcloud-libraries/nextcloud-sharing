@@ -5,6 +5,9 @@
  * @module public
  */
 import { loadState } from '@nextcloud/initial-state'
+import { getBuilder } from '@nextcloud/browser-storage'
+
+const browserStorage = getBuilder('public').persist().build()
 
 /**
  * Check if the current page is on a public share
@@ -29,4 +32,19 @@ export function getSharingToken(): string | null {
 			?.value ??
 		null
 	)
+}
+
+/**
+ * Get the guest nickname for public shares
+ */
+export function getGuestNickname(): string | null {
+	return browserStorage.getItem('guestNickname')
+}
+
+/**
+ * Set the guest nickname for public shares
+ * @param nickname The nickname to set
+ */
+export function setGuestNickname(nickname: string): void {
+	browserStorage.setItem('guestNickname', nickname)
 }
