@@ -2,6 +2,7 @@
   - SPDX-FileCopyrightText: 2021 Nextcloud GmbH and Nextcloud contributors
   - SPDX-License-Identifier: GPL-3.0-or-later
 -->
+
 # `@nextcloud/sharing`
 
 [![REUSE status](https://api.reuse.software/badge/github.com/nextcloud-libraries/nextcloud-sharing)](https://api.reuse.software/info/github.com/nextcloud-libraries/nextcloud-sharing)
