@@ -1,12 +1,12 @@
 {
   "name": "@nextcloud/sharing",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Front-end utilities for Nextcloud files sharing",
   "keywords": [
     "nextcloud"
   ],
   "license": "GPL-3.0-or-later",
-  "author": "Christoph Wurst",
+  "author": "Nextcloud GmbH and Nextcloud contributors",
   "type": "module",
   "exports": {
     ".": {

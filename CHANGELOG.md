@@ -7,6 +7,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.3 - 2024-07-24
+
+### Fixed
+
+-   fix: Typo in `ShareType.Group`
+
+### Changed
+
+-   Add SPDX license information header
+
 ## 0.2.2 - 2024-06-20
 
 ### Fixed
