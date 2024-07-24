@@ -23,7 +23,7 @@ export enum Type {
 
 export enum ShareType {
 	User = 0,
-	Grup = 1,
+	Group = 1,
 	Link = 3,
 	Email = 4,
 	Remote = 6,
