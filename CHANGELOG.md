@@ -7,6 +7,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.4 - 2024-12-03
+
+### Added
+
+-   feat: Add `ScienceMesh` shareType
+
+### Changed
+
+-   Add SPDX license information header
+
 ## 0.2.3 - 2024-07-24
 
 ### Fixed
