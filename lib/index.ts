@@ -39,4 +39,9 @@ export enum ShareType {
 	 * @since 26.0.0
 	 */
 	FederatedGroup = 14,
+	/**
+	 * Third party share types
+	 * @since 25.0.0
+	 */
+	ScienceMesh = 15,
 }
