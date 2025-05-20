@@ -20,5 +20,5 @@ npm i -S @nextcloud/sharing
 
 There are two entry points provided:
 
--   The main entry point `@nextcloud/sharing` provides general utils for file sharing
--   The _public_ entry point `@nextcloud/sharing/public` provides utils for handling public file shares
+- The main entry point `@nextcloud/sharing` provides general utils for file sharing
+- The _public_ entry point `@nextcloud/sharing/public` provides utils for handling public file shares
