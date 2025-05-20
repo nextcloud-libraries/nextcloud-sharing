@@ -32,7 +32,7 @@
     "build": "vite --mode production build",
     "build:doc": "typedoc --out dist/doc lib/index.ts lib/publicShare.ts && touch dist/doc/.nojekyll",
     "dev": "vite --mode development build",
-    "dev:watch": "vite --mode development build --watch",
+    "watch": "vite --mode development build --watch",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "eslint lib *.ts",
