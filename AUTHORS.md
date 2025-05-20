@@ -5,10 +5,10 @@
 
 # Authors
 
--   Andy Scherzinger <info@andy-scherzinger.de>
--   Christoph Wurst <christoph@winzerhof-wurst.at>
--   Ferdinand Thiessen <opensource@fthiessen.de>
--   John Molakvoæ <skjnldsv@protonmail.com>
--   Julius Härtl <jus@bitgrid.net>
--   Richard Steinmetz <richard@steinmetz.cloud>
--   Sandro Mesterheide <sandro.mesterheide@extern.publicplan.de>
+- Andy Scherzinger <info@andy-scherzinger.de>
+- Christoph Wurst <christoph@winzerhof-wurst.at>
+- Ferdinand Thiessen <opensource@fthiessen.de>
+- John Molakvoæ <skjnldsv@protonmail.com>
+- Julius Härtl <jus@bitgrid.net>
+- Richard Steinmetz <richard@steinmetz.cloud>
+- Sandro Mesterheide <sandro.mesterheide@extern.publicplan.de>
