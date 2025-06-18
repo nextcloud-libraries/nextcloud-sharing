@@ -32,10 +32,8 @@
     "build": "vite --mode production build",
     "build:doc": "typedoc --out dist/doc lib/index.ts lib/publicShare.ts && touch dist/doc/.nojekyll",
     "dev": "vite --mode development build",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
-    "lint": "eslint lib *.ts",
-    "lint:fix": "eslint --fix lib *.ts",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest run --watch",
@@ -44,27 +42,17 @@
   "browserslist": [
     "extends @nextcloud/browserslist-config"
   ],
-  "prettier": "@nextcloud/prettier-config",
-  "eslintConfig": {
-    "extends": [
-      "@nextcloud/eslint-config/typescript",
-      "prettier"
-    ]
-  },
   "dependencies": {
     "@nextcloud/initial-state": "^2.2.0"
   },
   "devDependencies": {
     "@nextcloud/browserslist-config": "^3.0.1",
-    "@nextcloud/eslint-config": "^8.4.1",
-    "@nextcloud/prettier-config": "^1.1.0",
+    "@nextcloud/eslint-config": "^9.0.0-rc.2",
     "@nextcloud/vite-config": "^2.0.2",
     "@types/node": "^24.0.3",
     "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint": "^9.29.0",
     "happy-dom": "^18.0.1",
-    "prettier": "^3.3.2",
     "typedoc": "^0.28.4",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
