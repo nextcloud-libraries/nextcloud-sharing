@@ -1,10 +1,10 @@
-/**
+/*!
  * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: CC0-1.0
  */
+
 import type { UserConfig } from 'vite'
 
-// eslint-disable-next-line n/no-unpublished-import
 import { createLibConfig } from '@nextcloud/vite-config'
 import { join } from 'node:path'
 

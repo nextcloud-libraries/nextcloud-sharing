@@ -9,34 +9,6 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 const initialState = vi.hoisted(() => ({ loadState: vi.fn() }))
 vi.mock('@nextcloud/initial-state', () => initialState)
 
-const mockPublicShare = () => {
-	initialState.loadState.mockImplementation((app, key) => {
-		if (key === 'isPublic') {
-			return true
-		} else if (key === 'sharingToken') {
-			return 'modern-token'
-		}
-		throw new Error('Unexpected loadState')
-	})
-}
-
-const mockLegacyPublicShare = () => {
-	initialState.loadState.mockImplementationOnce(() => null)
-
-	const input = document.createElement('input')
-	input.id = 'isPublic'
-	input.name = 'isPublic'
-	input.type = 'hidden'
-	input.value = '1'
-	document.body.appendChild(input)
-
-	const token = document.createElement('input')
-	token.id = 'sharingToken'
-	token.type = 'hidden'
-	token.value = 'legacy-token'
-	document.body.appendChild(token)
-}
-
 describe('isPublicShare', () => {
 	beforeEach(() => {
 		vi.resetModules()
@@ -120,3 +92,31 @@ describe('getSharingToken', () => {
 		expect(await getSharingToken()).toBe('legacy-token')
 	})
 })
+
+function mockPublicShare() {
+	initialState.loadState.mockImplementation((app, key) => {
+		if (key === 'isPublic') {
+			return true
+		} else if (key === 'sharingToken') {
+			return 'modern-token'
+		}
+		throw new Error('Unexpected loadState')
+	})
+}
+
+function mockLegacyPublicShare() {
+	initialState.loadState.mockImplementationOnce(() => null)
+
+	const input = document.createElement('input')
+	input.id = 'isPublic'
+	input.name = 'isPublic'
+	input.type = 'hidden'
+	input.value = '1'
+	document.body.appendChild(input)
+
+	const token = document.createElement('input')
+	token.id = 'sharingToken'
+	token.type = 'hidden'
+	token.value = 'legacy-token'
+	document.body.appendChild(token)
+}
