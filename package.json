@@ -37,6 +37,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest run --watch",
+    "ts:check": "tsc --noEmit",
     "watch": "vite --mode development build --watch"
   },
   "browserslist": [
