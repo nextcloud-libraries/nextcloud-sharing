@@ -1,6 +1,6 @@
 {
   "name": "@nextcloud/sharing",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Front-end utilities for Nextcloud files sharing",
   "keywords": [
     "nextcloud"

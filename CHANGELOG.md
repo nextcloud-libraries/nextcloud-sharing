@@ -7,6 +7,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.5 - 2025-06-19
+### Changed
+* chore: adjust node versions to support multiple Nextcloud versions \([\#74](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/74)\)
+* chore: move from `dev:watch` back to `watch` \([\#47](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/47)\)
+* chore: update ESLint to v9 \([\#78](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/78)\)
+* chore: update workflows from organization \([\#75](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/75)\)
+* ci: add workflow to check for typescript issues \([\#79](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/79)\)
+
 ## 0.2.4 - 2024-12-03
 
 ### Added
