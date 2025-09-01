@@ -45,7 +45,8 @@
     "watch": "vite --mode development build --watch"
   },
   "dependencies": {
-    "@nextcloud/initial-state": "^3.0.0"
+    "@nextcloud/initial-state": "^3.0.0",
+    "is-svg": "^6.1.0"
   },
   "devDependencies": {
     "@nextcloud/eslint-config": "^9.0.0-rc.5",
