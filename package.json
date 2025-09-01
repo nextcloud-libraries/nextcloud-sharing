@@ -18,8 +18,8 @@
       "default": "./dist/public.js"
     },
     "./ui": {
-      "types": "./dist/ui.d.ts",
-      "default": "./dist/ui.js"
+      "types": "./dist/ui/index.d.ts",
+      "default": "./dist/ui/index.js"
     }
   },
   "main": "dist/index.js",

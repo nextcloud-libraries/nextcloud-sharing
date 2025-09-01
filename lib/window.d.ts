@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { ISharingSection } from './ui/index.ts'
+import type { ISidebarAction, ISidebarSection } from './ui/index.ts'
+
 declare global {
 	interface Window {
-		_nc_files_sharing_sidebar_sections?: Map<string, ISharingSection>
+		_nc_files_sharing_sidebar_actions?: Map<string, ISidebarAction>
+		_nc_files_sharing_sidebar_sections?: Map<string, ISidebarSection>
 	}
 }

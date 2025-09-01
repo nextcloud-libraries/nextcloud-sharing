@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+export type * from './sidebar-action.ts'
 export type * from './sidebar-section.ts'
 
+export * from './sidebar-action.ts'
 export * from './sidebar-section.ts'
