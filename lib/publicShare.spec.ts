@@ -18,7 +18,7 @@ describe('isPublicShare', () => {
 	})
 
 	const isPublicShare = async () => {
-		const { isPublicShare: publicShare } = await import('./publicShare.ts')
+		const { isPublicShare: publicShare } = await import('../lib/public.ts')
 		return publicShare()
 	}
 
@@ -60,7 +60,7 @@ describe('getSharingToken', () => {
 	})
 
 	const getSharingToken = async () => {
-		const { getSharingToken: sharingToken } = await import('./publicShare.ts')
+		const { getSharingToken: sharingToken } = await import('./public.ts')
 		return sharingToken()
 	}
 
