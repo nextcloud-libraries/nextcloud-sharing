@@ -7,6 +7,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.0 - 2025-09-05
+### Breaking changes
+* The deprecated `Type` enum was removed. Instead use the `ShareType` enum provided from the main entry point.
+
+### Added
+* feat: provide API to register sidebar sections and actions \([\#95](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/95)\)
+
+### Changed
+* ci: update npm-publish.yml workflow from template \([\#84](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/84)\)
+* build: use vanilla Typescript for bundling \([\#74](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/88)\)
+* chore(deps): Bump @nextcloud/initial-state to 3.0.0
+
 ## 0.2.5 - 2025-06-19
 ### Changed
 * chore: adjust node versions to support multiple Nextcloud versions \([\#74](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/74)\)
