@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: CC0-1.0
+
+changelog:
+  categories:
+    - title: 💥 Breaking changes
+      labels:
+        - breaking
+        - "type: breaking"
+    - title: Added
+      labels:
+        - enhancement
+        - "type: enhancement"
+    - title: Fixed
+      labels:
+        - bug
+        - "type: bug"
+    - title: Changed
+      labels:
+        - "*"
