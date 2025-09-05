@@ -60,7 +60,7 @@ describe('getSharingToken', () => {
 	})
 
 	const getSharingToken = async () => {
-		const { getSharingToken: sharingToken } = await import('./public.ts')
+		const { getSharingToken: sharingToken } = await import('../lib/public.ts')
 		return sharingToken()
 	}
 

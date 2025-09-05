@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 import { expect, test } from 'vitest'
-import { ShareType } from '.'
+import { ShareType } from '../lib/index.ts'
 
 test('ShareType', () => {
 	for (const type of Object.values(ShareType)) {
