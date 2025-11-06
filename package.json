@@ -52,12 +52,12 @@
     "@nextcloud/eslint-config": "^9.0.0-rc.5",
     "@nextcloud/files": "^3.12.0",
     "@types/node": "^24.9.1",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.0.7",
     "eslint": "^9.29.0",
     "happy-dom": "^20.0.8",
     "typedoc": "^0.28.14",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.7"
   },
   "optionalDependencies": {
     "@nextcloud/files": "^3.12.0"
