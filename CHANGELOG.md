@@ -7,6 +7,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 - 2026-02-11
+### Changed
+* chore(deps): Allow `@nextcloud/files` v3 or v4 as dependencies for Nextcloud 33+ support [\#158](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/158)
+* chore: align `devEngines` with apps [\#123](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/123)
+
 ## 0.3.0 - 2025-09-05
 ### Breaking changes
 * The deprecated `Type` enum was removed. Instead use the `ShareType` enum provided from the main entry point.
