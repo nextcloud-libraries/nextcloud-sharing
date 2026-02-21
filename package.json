@@ -59,7 +59,7 @@
     "@types/node": "^25.3.0",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.29.0",
-    "happy-dom": "^20.6.1",
+    "happy-dom": "^20.7.0",
     "typedoc": "^0.28.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.7"
