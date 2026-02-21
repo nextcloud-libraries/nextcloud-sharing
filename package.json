@@ -58,7 +58,7 @@
     "@nextcloud/files": "^4.0.0",
     "@types/node": "^25.3.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "eslint": "^9.29.0",
+    "eslint": "^10.0.1",
     "happy-dom": "^20.7.0",
     "typedoc": "^0.28.17",
     "typescript": "^5.9.3",
