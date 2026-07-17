@@ -23,11 +23,11 @@
       "default": "./dist/public.mjs"
     },
     "./ui": {
-      "types": "./dist/ui.d.ts",
+      "types": "./dist/ui/index.d.ts",
       "default": "./dist/ui.mjs"
     },
     "./dialog": {
-      "types": "./dist/dialog.d.ts",
+      "types": "./dist/dialog/index.d.ts",
       "default": "./dist/dialog.mjs"
     }
   },

@@ -46,8 +46,5 @@ export default defineConfig((env) => {
 		replace: {
 			__TRANSLATIONS__: JSON.stringify(translations),
 		},
-		DTSPluginOptions: {
-			rollupTypes: env.mode === 'production',
-		},
 	})(env)
 }) as UserConfigFn
