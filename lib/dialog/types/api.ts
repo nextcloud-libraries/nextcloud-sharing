@@ -86,14 +86,21 @@ export interface SharingProperty {
 
 // --- Permission ---
 
-export type SharingPermissionPreset = 'view' | 'edit'
-
-export interface SharingPermission {
+/** A permission preset registered on the server, e.g. "Can view" or "Can edit" */
+export interface SharingPermissionPreset {
 	class: string
 	display_name: string
 	hint: string | null
-	category: string | null
-	presets: SharingPermissionPreset[]
+}
+
+export interface SharingPermission {
+	class: string
+	source_class: string | null
+	display_name: string
+	hint: string | null
+	priority: number
+	/** Classes of the presets this permission belongs to */
+	presets: string[]
 	enabled: boolean
 }
 
@@ -103,23 +110,11 @@ export interface SharingSourceType {
 	class: string
 }
 
-export interface SharingPermissionCategoryType {
-	class: string
-	display_name: string
-	hint: string | null
-	icon: SharingIcon | null
-	priority: number
-}
-
 export interface SharingCapabilities {
 	sharing: {
 		api_versions: string[]
-		legacy?: {
-			max_sources: number
-			max_recipients: number
-		}
 		source_types: SharingSourceType[]
-		permission_category_types: SharingPermissionCategoryType[]
+		permission_presets: SharingPermissionPreset[]
 	}
 }
 
@@ -136,5 +131,6 @@ export interface SharingShare {
 	recipients: SharingRecipient[]
 	properties: SharingProperty[]
 	permissions: SharingPermission[]
-	permission_preset: SharingPermissionPreset | null
+	/** Class of the preset matching the enabled permissions, null when custom */
+	permission_preset: string | null
 }

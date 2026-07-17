@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import type { SharingPermissionPreset, SharingRecipient, SharingShare, SharingState } from '../types/api.ts'
+import type { SharingRecipient, SharingShare, SharingState } from '../types/api.ts'
 
 import axios from '@nextcloud/axios'
 import { generateOcsUrl } from '@nextcloud/router'
@@ -162,12 +162,12 @@ export async function updateSharePermission(shareId: string, permissionClass: st
  * Select a permission preset on a share.
  * The backend enables the permissions belonging to the preset and disables the rest.
  *
- * @param shareId
- * @param preset
+ * @param shareId Id of the share
+ * @param presetClass Class of the preset to apply
  */
-export async function selectSharePermissionPreset(shareId: string, preset: SharingPermissionPreset): Promise<SharingShare> {
+export async function selectSharePermissionPreset(shareId: string, presetClass: string): Promise<SharingShare> {
 	const response = await axios.put(sharingUrl(`/share/${shareId}/permission/preset`), {
-		permissionPreset: preset,
+		permissionPresetClass: presetClass,
 	})
 	return unwrapOcs<SharingShare>(response)
 }

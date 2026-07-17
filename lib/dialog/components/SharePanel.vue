@@ -164,12 +164,13 @@
 
 <script setup lang="ts">
 import type { NcSelectUsersModel } from '@nextcloud/vue/components/NcSelectUsers'
-import type { SharingPermission, SharingPermissionPreset, SharingProperty, SharingShare } from '../types/api.ts'
+import type { SharingCapabilities, SharingPermission, SharingPermissionPreset, SharingProperty, SharingShare } from '../types/api.ts'
 
 import AccountPlusOutlineIconSvg from '@mdi/svg/svg/account-plus-outline.svg?raw'
 import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
 import IconSend from '@mdi/svg/svg/send.svg?raw'
 import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
+import { getCapabilities } from '@nextcloud/capabilities'
 import { generateUrl } from '@nextcloud/router'
 import debounce from 'debounce'
 import { computed, reactive, ref, watch } from 'vue'
@@ -511,28 +512,13 @@ watch(selectedRecipient, async (newVal, oldVal) => {
 	}
 })
 
-// Sentinel for the read-only "custom" entry shown when no preset matches.
+// Sentinel for the "custom" entry that reveals the individual permission toggles.
 const CUSTOM_VALUE = 'custom'
 
-type PresetValue = SharingPermissionPreset | typeof CUSTOM_VALUE
-type PresetOption = { value: PresetValue, label: string }
+type PresetOption = { value: string, label: string }
 
-// The backend exposes no preset labels (the SharePermissionPreset enum is
-// value-only), so they are mapped here. Unknown presets fall back to their raw
-// value, keeping the preset set backend-driven rather than gated to known ones.
-const PRESET_LABELS: Partial<Record<SharingPermissionPreset, string>> = {
-	view: t('Can view'),
-	edit: t('Can edit'),
-}
-
-/**
- * Human label for a preset, falling back to its raw value if unmapped.
- *
- * @param preset The preset value
- */
-function presetLabel(preset: SharingPermissionPreset): string {
-	return PRESET_LABELS[preset] ?? t('Can {preset}', { preset })
-}
+// Presets registered on the server, with their translated display names.
+const capabilityPresets: SharingPermissionPreset[] = (getCapabilities() as Partial<SharingCapabilities>).sharing?.permission_presets ?? []
 
 // Always-present entry that reveals the individual permission toggles.
 const customOption: PresetOption = { value: CUSTOM_VALUE, label: t('Can…') }
@@ -549,21 +535,21 @@ const permissions = computed<SharingPermission[]>(() => {
 	return [...props.share.permissions].sort((a, b) => (permissionOrder.get(a.class) ?? 0) - (permissionOrder.get(b.class) ?? 0))
 })
 
-// Presets offered by this share = the union of the presets its permissions
-// belong to, in first-seen order. Fully backend-driven, no fixed preset list.
+// Presets offered by this share = the registered presets (which carry the
+// translated display name) that at least one of its permissions belongs to.
 const availablePresets = computed<SharingPermissionPreset[]>(() => {
-	const seen = new Set<SharingPermissionPreset>()
+	const seen = new Set<string>()
 	for (const permission of permissions.value) {
-		for (const preset of permission.presets) {
-			seen.add(preset)
+		for (const presetClass of permission.presets) {
+			seen.add(presetClass)
 		}
 	}
-	return [...seen]
+	return capabilityPresets.filter((preset) => seen.has(preset.class))
 })
 
 // The "Can…" custom entry is always offered, in addition to the presets.
 const presetOptions = computed<PresetOption[]>(() => [
-	...availablePresets.value.map((p) => ({ value: p, label: presetLabel(p) })),
+	...availablePresets.value.map((preset) => ({ value: preset.class, label: preset.display_name })),
 	customOption,
 ])
 
@@ -571,7 +557,7 @@ const presetOptions = computed<PresetOption[]>(() => [
 // keep it — and keep the toggles shown — even if their edits happen to match a
 // preset. They only leave custom by explicitly picking a preset. Initialised
 // from the backend (null preset === no match === custom).
-const selectedValue = ref<PresetValue>(props.share.permission_preset ?? CUSTOM_VALUE)
+const selectedValue = ref<string>(props.share.permission_preset ?? CUSTOM_VALUE)
 
 const selectedPresetOption = computed<PresetOption | null>(() => presetOptions.value.find((o) => o.value === selectedValue.value) ?? null)
 
