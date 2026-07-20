@@ -66,19 +66,20 @@
 				@update:modelValue="(value) => updateValue(value)" />
 		</template>
 
-		<!-- Date property -->
-		<NcDateTimePickerNative
+		<!-- Date property: reuses NcTextField for the floating-label design. -->
+		<!-- @vue-expect-error type="date" needs @nextcloud/vue > 9.9.0 (NcInputField date support); works at runtime on 9.9.0 -->
+		<NcTextField
 			v-if="property.type === 'date'"
 			:disabled="disabled || loading"
 			:label="property.display_name"
-			:min="parseISODate(property.min_date)"
-			:max="parseISODate(property.max_date)"
-			:modelValue="parseISODate(modelValue)"
-			:placeholder="property.hint || property.display_name"
+			:loading="loading"
+			:min="isoDateOnly(property.min_date)"
+			:max="isoDateOnly(property.max_date)"
+			:modelValue="isoDateOnly(modelValue)"
 			:required="property.required"
 			class="property-field__input-date"
 			type="date"
-			@update:modelValue="(value: Date | null) => value && updateValue(value)" />
+			@update:modelValue="(value: string | number) => updateValue(String(value) ? new Date(String(value)) : null)" />
 
 		<!-- Password property -->
 		<NcPasswordField
@@ -101,7 +102,6 @@ import type { SharingProperty } from '../types/api.ts'
 import debounce from 'debounce'
 import { ref, useTemplateRef } from 'vue'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
-import NcDateTimePickerNative from '@nextcloud/vue/components/NcDateTimePickerNative'
 import NcPasswordField from '@nextcloud/vue/components/NcPasswordField'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcTextArea from '@nextcloud/vue/components/NcTextArea'
@@ -137,20 +137,13 @@ function getControl(): HTMLInputElement | HTMLTextAreaElement | null {
 }
 
 /**
- * Parse ISO date string to Date object.
+ * Reduce an ISO 8601 string to its date part (YYYY-MM-DD) for a native date input.
  *
  * @param value The ISO date string or null
- * @return Date object or undefined
+ * @return The date part, or an empty string
  */
-function parseISODate(value: string | null | undefined): Date | undefined {
-	if (!value) {
-		return undefined
-	}
-	try {
-		return new Date(value)
-	} catch {
-		return undefined
-	}
+function isoDateOnly(value: string | null | undefined): string {
+	return value ? value.slice(0, 10) : ''
 }
 
 const debouncedPersist = debounce(persistValue, 500)
