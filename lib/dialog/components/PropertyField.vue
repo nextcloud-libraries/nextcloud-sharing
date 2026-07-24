@@ -8,6 +8,7 @@
 		<NcFormBox v-if="property.type === 'boolean'">
 			<NcFormBoxSwitch
 				:label="property.display_name"
+				:description="property.hint ?? undefined"
 				:disabled="disabled"
 				:modelValue="modelValue === 'true'"
 				class="property-field__input-boolean"
@@ -35,6 +36,7 @@
 				v-if="(property.max_length || 0) <= 255"
 				:disabled="disabled"
 				:label="property.display_name"
+				:helperText="property.hint ?? undefined"
 				:loading="loading"
 				:maxLength="property.max_length"
 				:minLength="property.min_length"
@@ -50,6 +52,7 @@
 				v-else
 				:disabled="disabled"
 				:label="property.display_name"
+				:helperText="property.hint ?? undefined"
 				:loading="loading"
 				:maxLength="property.max_length"
 				:minLength="property.min_length"
@@ -67,6 +70,7 @@
 			v-if="property.type === 'date'"
 			:disabled="disabled || loading"
 			:label="property.display_name"
+			:helperText="property.hint ?? undefined"
 			:min="parseISODate(property.min_date)"
 			:max="parseISODate(property.max_date)"
 			:modelValue="parseISODate(modelValue)"
@@ -81,6 +85,7 @@
 			:asText="modelValue === ''"
 			:disabled="disabled"
 			:label="property.display_name"
+			:helperText="property.hint ?? undefined"
 			:loading="loading"
 			:modelValue="modelValue || ''"
 			:placeholder="property.hint || property.display_name"
@@ -88,8 +93,9 @@
 			class="property-field__input-password"
 			@update:modelValue="(value) => updateValue(value)" />
 
-		<!-- Backend-provided hint, shown as a subtle note under the field -->
-		<p v-if="property.hint" class="property-field__hint">
+		<!-- NcSelect has no helperText, so surface its hint as a note here.
+		     Other field types use their native helperText prop instead. -->
+		<p v-if="property.hint && property.type === 'enum'" class="property-field__hint">
 			<NcIconSvgWrapper :svg="IconInformationOutline" :size="16" />
 			<span>{{ property.hint }}</span>
 		</p>

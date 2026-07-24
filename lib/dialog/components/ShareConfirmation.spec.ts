@@ -44,14 +44,14 @@ describe('ShareConfirmation', () => {
 
 	it('presents the link in a readonly field', () => {
 		const wrapper = mountConfirmation({ isPublic: true })
-		const field = wrapper.findComponent({ name: 'NcTextField' })
+		const field = wrapper.findComponent({ name: 'NcInputField' })
 		expect(field.props('modelValue')).toBe(LINK)
 		expect(field.attributes('readonly')).toBeDefined()
 	})
 
 	it('shows no link field when there is no link', () => {
 		const wrapper = mountConfirmation({ link: null, isPublic: true })
-		expect(wrapper.findComponent({ name: 'NcTextField' }).exists()).toBe(false)
+		expect(wrapper.findComponent({ name: 'NcInputField' }).exists()).toBe(false)
 	})
 
 	it('emits close when Done is clicked', () => {

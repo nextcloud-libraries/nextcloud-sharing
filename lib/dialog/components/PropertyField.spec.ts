@@ -101,15 +101,21 @@ describe('PropertyField rendering', () => {
 		expect(wrapper.find('.property-field__input-password input').exists()).toBe(true)
 	})
 
-	it('shows a hint note under the field when the backend provides one', () => {
-		const wrapper = mountField({ hint: 'Recipients will be notified' })
+	it('shows a hint note for an enum property (NcSelect has no helperText)', () => {
+		const wrapper = mountField({ type: 'enum', valid_values: ['a', 'b'], min_length: null, max_length: null, hint: 'Pick one' })
 		const hint = wrapper.find('.property-field__hint')
 		expect(hint.exists()).toBe(true)
-		expect(hint.text()).toContain('Recipients will be notified')
+		expect(hint.text()).toContain('Pick one')
+	})
+
+	it('passes the hint as helperText on a text field instead of a custom note', () => {
+		const wrapper = mountField({ hint: 'Recipients will be notified' })
+		expect(wrapper.find('.property-field__hint').exists()).toBe(false)
+		expect(wrapper.findComponent({ name: 'NcTextField' }).props('helperText')).toBe('Recipients will be notified')
 	})
 
 	it('renders no hint note when the property has none', () => {
-		const wrapper = mountField({ hint: null })
+		const wrapper = mountField({ type: 'enum', valid_values: ['a'], min_length: null, max_length: null, hint: null })
 		expect(wrapper.find('.property-field__hint').exists()).toBe(false)
 	})
 

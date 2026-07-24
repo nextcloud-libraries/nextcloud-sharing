@@ -13,22 +13,19 @@
 		</NcEmptyContent>
 
 		<template v-if="link">
-			<!-- Copy the link -->
-			<div class="share-confirmation__link">
-				<NcTextField
-					class="share-confirmation__link-input"
-					:label="t('Share link')"
-					:modelValue="link"
-					readonly />
-				<NcButton
-					:aria-label="t('Copy to clipboard')"
-					@click="copyLink">
-					<template #icon>
-						<NcIconSvgWrapper :svg="copied ? IconCheck : IconContentCopy" :size="20" />
-					</template>
-					{{ copied ? t('Copied!') : t('Copy') }}
-				</NcButton>
-			</div>
+			<!-- Copy the link, with an inline copy button inside the field -->
+			<NcInputField
+				class="share-confirmation__link-input"
+				:label="t('Share link')"
+				:modelValue="link"
+				readonly
+				showTrailingButton
+				:trailingButtonLabel="copied ? t('Copied!') : t('Copy to clipboard')"
+				@trailingButtonClick="copyLink">
+				<template #trailing-button-icon>
+					<NcIconSvgWrapper :svg="copied ? IconCheck : IconContentCopy" :size="20" />
+				</template>
+			</NcInputField>
 
 			<!-- Optional QR code for a public link -->
 			<template v-if="isPublic">
@@ -71,7 +68,7 @@ import { ref } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcInputField from '@nextcloud/vue/components/NcInputField'
 import QrcodeVue from 'qrcode.vue'
 import { copyToClipboard } from '../utils/clipboard.ts'
 import { t } from '../utils/l10n.ts'
@@ -128,15 +125,8 @@ async function copyLink() {
 		color: var(--color-success);
 	}
 
-	&__link {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--default-grid-baseline);
+	&__link-input {
 		width: 100%;
-
-		&-input {
-			flex: 1 1 auto;
-		}
 	}
 
 	&__qr {
