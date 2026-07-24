@@ -4,21 +4,15 @@
 -->
 <template>
 	<div class="share-confirmation">
-		<NcIconSvgWrapper class="share-confirmation__icon" :svg="IconCheckCircle" :size="44" />
-
-		<h3 class="share-confirmation__title">
-			{{ isPublic ? t('Your share link is ready') : t('Your share is ready') }}
-		</h3>
+		<NcEmptyContent
+			class="share-confirmation__header"
+			:name="isPublic ? t('Your share link is ready') : t('Your share is ready')">
+			<template #icon>
+				<NcIconSvgWrapper class="share-confirmation__icon" :svg="IconCheckCircle" />
+			</template>
+		</NcEmptyContent>
 
 		<template v-if="link">
-			<!-- QR code, only useful for a public link -->
-			<QrcodeVue
-				v-if="isPublic"
-				class="share-confirmation__qr"
-				:value="link"
-				:size="200"
-				level="M" />
-
 			<!-- Copy the link -->
 			<div class="share-confirmation__link">
 				<NcTextField
@@ -35,6 +29,28 @@
 					{{ copied ? t('Copied!') : t('Copy') }}
 				</NcButton>
 			</div>
+
+			<!-- Optional QR code for a public link -->
+			<template v-if="isPublic">
+				<NcButton
+					class="share-confirmation__qr-toggle"
+					variant="tertiary"
+					@click="showQrCode = !showQrCode">
+					<template #icon>
+						<NcIconSvgWrapper :svg="IconQrcode" :size="20" />
+					</template>
+					{{ showQrCode ? t('Hide QR code') : t('Show QR code') }}
+				</NcButton>
+				<QrcodeVue
+					v-if="showQrCode"
+					class="share-confirmation__qr"
+					:value="link"
+					:size="200"
+					:margin="2"
+					level="M"
+					background="#ffffff"
+					foreground="#000000" />
+			</template>
 		</template>
 
 		<NcButton
@@ -50,8 +66,10 @@
 import IconCheckCircle from '@mdi/svg/svg/check-circle-outline.svg?raw'
 import IconCheck from '@mdi/svg/svg/check.svg?raw'
 import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
+import IconQrcode from '@mdi/svg/svg/qrcode.svg?raw'
 import { ref } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
 import QrcodeVue from 'qrcode.vue'
@@ -71,6 +89,7 @@ const emit = defineEmits<{
 }>()
 
 const copied = ref(false)
+const showQrCode = ref(false)
 
 /**
  * Copy the link to the clipboard and briefly reflect it in the button.
@@ -97,20 +116,16 @@ async function copyLink() {
 	flex-direction: column;
 	align-items: center;
 	gap: calc(var(--default-grid-baseline) * 3);
-	padding-block: calc(var(--default-grid-baseline) * 3);
-	text-align: center;
+	padding-block-end: calc(var(--default-grid-baseline) * 3);
+
+	&__header {
+		// Tighten the empty-content spacing inside the dialog.
+		margin: 0 !important;
+		padding-block: calc(var(--default-grid-baseline) * 2) 0;
+	}
 
 	&__icon {
 		color: var(--color-success);
-	}
-
-	&__title {
-		margin: 0;
-		font-size: 1.2em;
-	}
-
-	&__qr {
-		border-radius: var(--border-radius-element);
 	}
 
 	&__link {
@@ -122,6 +137,13 @@ async function copyLink() {
 		&-input {
 			flex: 1 1 auto;
 		}
+	}
+
+	&__qr {
+		// Always a light card so the code stays scannable in dark mode.
+		background-color: #fff;
+		padding: var(--default-grid-baseline);
+		border-radius: var(--border-radius-element);
 	}
 
 	&__done {

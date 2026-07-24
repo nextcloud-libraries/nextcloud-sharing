@@ -21,15 +21,24 @@ function mountConfirmation(props: Record<string, unknown>) {
 }
 
 describe('ShareConfirmation', () => {
-	it('shows a QR code for a public link', () => {
+	it('offers an optional QR code for a public link, hidden by default', async () => {
 		const wrapper = mountConfirmation({ isPublic: true })
+		// Hidden until toggled.
+		expect(wrapper.find('.share-confirmation__qr').exists()).toBe(false)
+		const toggle = wrapper.findComponent('.share-confirmation__qr-toggle')
+		expect(toggle.exists()).toBe(true)
+
+		toggle.vm.$emit('click')
+		await wrapper.vm.$nextTick()
+
 		const qr = wrapper.findComponent('.share-confirmation__qr')
 		expect(qr.exists()).toBe(true)
 		expect(qr.props('value')).toBe(LINK)
 	})
 
-	it('does not show a QR code for a non-public share', () => {
+	it('does not offer a QR code for a non-public share', () => {
 		const wrapper = mountConfirmation({ isPublic: false })
+		expect(wrapper.find('.share-confirmation__qr-toggle').exists()).toBe(false)
 		expect(wrapper.find('.share-confirmation__qr').exists()).toBe(false)
 	})
 
