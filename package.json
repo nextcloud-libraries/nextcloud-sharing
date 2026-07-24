@@ -61,7 +61,9 @@
     "@nextcloud/logger": "^3.0.3",
     "@nextcloud/router": "^3.1.0",
     "debounce": "^3.0.0",
-    "is-svg": "^6.1.0"
+    "is-svg": "^6.1.0",
+    "qrcode.vue": "^3.10.0",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@nextcloud/eslint-config": "^9.0.1",

@@ -47,6 +47,13 @@
 			:name="t('Failed to create share')"
 			:description="error" />
 
+		<!-- Confirmation shown after the share is submitted -->
+		<ShareConfirmation
+			v-else-if="submitted"
+			:link="submitResult?.link ?? null"
+			:isPublic="submitResult?.isPublic ?? false"
+			@close="emit('close')" />
+
 		<template v-else-if="share">
 			<SharePanel
 				:inSettings="inSettings"
@@ -55,12 +62,13 @@
 				:shareDialogTab="shareDialogTab"
 				@settingsWarning="settingsHasWarning = $event"
 				@settingsAvailable="settingsAvailable = $event"
-				@update:modelValue="shareDialogTab = $event" />
+				@update:modelValue="shareDialogTab = $event"
+				@submitted="onSubmitted" />
 		</template>
 
 		<!-- Settings toggle -->
 		<NcButton
-			v-if="!inSettings && share && settingsAvailable"
+			v-if="!inSettings && !submitted && share && settingsAvailable"
 			:aria-label="t('Additional sharing settings')"
 			class="sharing-dialog__settings-toggle"
 			:class="{ 'sharing-dialog__settings-toggle--warning': settingsHasWarning }"
@@ -88,6 +96,7 @@ import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import ShareConfirmation from './components/ShareConfirmation.vue'
 import SharePanel from './components/SharePanel.vue'
 import { createShare } from './api/share.ts'
 import { SOURCE_TYPE_NODE } from './constants.ts'
@@ -133,6 +142,22 @@ const dialogTitle = computed(() => {
 const shareDialogTab = ref<ShareDialogTab>(ShareDialogTab.InvitedPeople)
 const settingsHasWarning = ref(false)
 const settingsAvailable = ref(false)
+
+// Once the share is submitted we swap the form for the confirmation view.
+const submitted = ref(false)
+const submitResult = ref<{ link: string | null, isPublic: boolean } | null>(null)
+
+/**
+ * Switch to the confirmation view with the submitted share's link.
+ *
+ * @param payload The resolved link and whether it is a public link
+ * @param payload.link
+ * @param payload.isPublic
+ */
+function onSubmitted(payload: { link: string | null, isPublic: boolean }) {
+	submitResult.value = payload
+	submitted.value = true
+}
 
 onMounted(async () => {
 	// A ready share was passed in; nothing to create.

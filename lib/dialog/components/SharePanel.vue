@@ -110,12 +110,17 @@
 				</NcButton>
 			</NcNoteCard>
 
+			<!-- Failure while submitting the share -->
+			<NcNoteCard v-if="submitError" type="error">
+				{{ submitError }}
+			</NcNoteCard>
+
 			<!-- Link actions -->
 			<div class="share-panel__link-actions">
 				<NcButton
 					class="share-panel__link-copy"
 					:aria-label="copyLinkLabel"
-					:disabled="linkActionsDisabled"
+					:disabled="linkActionsDisabled || submitting"
 					@click="copyLink">
 					<template #icon>
 						<NcLoadingIcon v-if="linkRecipientLoading" :size="20" />
@@ -127,10 +132,11 @@
 					class="share-panel__link-send"
 					variant="primary"
 					:aria-label="t('Send share link')"
-					:disabled="linkActionsDisabled"
+					:disabled="linkActionsDisabled || submitting"
 					@click="sendLink">
 					<template #icon>
-						<NcIconSvgWrapper :svg="IconSend" :size="20" />
+						<NcLoadingIcon v-if="submitting" :size="20" />
+						<NcIconSvgWrapper v-else :svg="IconSend" :size="20" />
 					</template>
 					{{ t('Send') }}
 				</NcButton>
@@ -185,6 +191,7 @@ import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
 import { getCapabilities } from '@nextcloud/capabilities'
 import { generateUrl } from '@nextcloud/router'
 import debounce from 'debounce'
+import { v4 as uuidv4 } from 'uuid'
 import { computed, reactive, ref, watch } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcFormBox from '@nextcloud/vue/components/NcFormBox'
@@ -199,9 +206,10 @@ import NcSelectUsers from '@nextcloud/vue/components/NcSelectUsers'
 import InlineToggleField from './InlineToggleField.vue'
 import PropertyField from './PropertyField.vue'
 import { searchRecipients } from '../api/share.ts'
-import { FIRST_PAGE_PROPERTIES, HIDDEN_PROPERTIES, PROPERTY_EXPIRATION, PROPERTY_PASSWORD, PROPERTY_URL, RECIPIENT_TYPE_TOKEN, SOURCE_TYPE_NODE } from '../constants.ts'
+import { FIRST_PAGE_PROPERTIES, HIDDEN_PROPERTIES, PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, SOURCE_TYPE_NODE } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 import { getOcsErrorMessage, recipientToNcSelectUsersModel } from '../utils/api.ts'
+import { copyToClipboard } from '../utils/clipboard.ts'
 import { t } from '../utils/l10n.ts'
 import { logger } from '../utils/logger.ts'
 import { shareOutcomeSummary } from '../utils/summary.ts'
@@ -220,6 +228,7 @@ const emit = defineEmits<{
 	(e: 'update:modelValue', value: ShareDialogTab): void
 	(e: 'settingsWarning', value: boolean): void
 	(e: 'settingsAvailable', value: boolean): void
+	(e: 'submitted', value: { link: string | null, isPublic: boolean }): void
 }>()
 
 // Local reactive copy of properties for two-way binding with PropertyField
@@ -249,8 +258,6 @@ const firstPageProperties = computed(() => properties.filter((p) => FIRST_PAGE_P
 
 const settingsProperties = computed(() => properties.filter((p) => !HIDDEN_PROPERTIES.includes(p.class)
 	&& !FIRST_PAGE_PROPERTIES.includes(p.class)))
-
-const urlProperty = computed(() => properties.find((p) => p.class === PROPERTY_URL) ?? null)
 
 // Plain-language summary of the outcome, inspired by the file request dialog:
 // "This share will expire on {date} at {time} and will be password protected."
@@ -309,7 +316,7 @@ const tokenRecipient = computed(() => props.share.recipients.find((r) => r.class
  * chars; a UUID (36 chars, URL-safe) fits and is cryptographically random.
  */
 function generateShareToken(): string {
-	return crypto.randomUUID()
+	return uuidv4()
 }
 
 // Progress + error state for the token-recipient mutation triggered on tab switch.
@@ -433,37 +440,25 @@ async function toggleOptionalProperty(property: SharingProperty, enabled: boolea
 }
 
 const copied = ref(false)
+const submitting = ref(false)
+const submitError = ref<string | null>(null)
+
+// The share link to present: the public link lives on the token recipient's
+// secret (only once the share is active); otherwise the private link to the file.
+const resolvedLink = computed<string | null>(() => isLinkShare.value
+	? props.share.recipients.find((r) => r.class === RECIPIENT_TYPE_TOKEN)?.secret.url ?? null
+	: privateLinkUrl.value)
 
 /**
- * Copy text to the clipboard. In insecure (http) contexts where
- * navigator.clipboard is unavailable, fall back to a manual-copy prompt
- * (document.execCommand('copy') is deprecated and unreliable).
- *
- * @param text The text to copy
- */
-async function copyToClipboard(text: string) {
-	if (navigator.clipboard?.writeText) {
-		await navigator.clipboard.writeText(text)
-		return
-	}
-	window.prompt(t('Please copy the share link manually'), text)
-}
-
-/**
- *
+ * Copy the current share link to the clipboard, activating the draft first if
+ * needed so a public link (and its token) exists.
  */
 async function copyLink() {
 	try {
-		// A public link's URL (and its share token) only exists once the share is
-		// validated/active — activate the draft first, then read the fresh URL.
 		if (isLinkShare.value && props.share.state === 'draft') {
 			await props.share.activate()
 		}
-		// The public link URL is exposed on the token recipient's secret, not as a
-		// property. The private link points straight at the file by its node id.
-		const url = isLinkShare.value
-			? props.share.recipients.find((r) => r.class === RECIPIENT_TYPE_TOKEN)?.secret.url ?? null
-			: privateLinkUrl.value
+		const url = resolvedLink.value
 		if (!url) {
 			logger.warn('No link available to copy', { isLinkShare: isLinkShare.value })
 			return
@@ -479,11 +474,23 @@ async function copyLink() {
 }
 
 /**
- *
+ * Submit the share: activate the draft (which validates it and notifies mail
+ * recipients), then hand off to the confirmation view.
  */
-function sendLink() {
-	// TODO: implement send flow
-	logger.debug('Send link clicked', { url: urlProperty.value?.value })
+async function sendLink() {
+	submitting.value = true
+	submitError.value = null
+	try {
+		if (props.share.state === 'draft') {
+			await props.share.activate()
+		}
+		emit('submitted', { link: resolvedLink.value, isPublic: isLinkShare.value })
+	} catch (e) {
+		logger.error('Failed to submit share', { error: e })
+		submitError.value = getOcsErrorMessage(e)
+	} finally {
+		submitting.value = false
+	}
 }
 
 const shareTypes = ref([

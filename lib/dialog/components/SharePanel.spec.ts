@@ -158,6 +158,18 @@ describe('SharePanel recipient sync', () => {
 	})
 })
 
+describe('SharePanel submit', () => {
+	it('activates the share and emits submitted with the link', async () => {
+		const { wrapper, share } = mountPanel(schema({ state: 'draft' }), { shareDialogTab: ShareDialogTab.InvitedPeople })
+		wrapper.findComponent('.share-panel__link-send').vm.$emit('click')
+		await flushPromises()
+		expect(share.activate).toHaveBeenCalledOnce()
+		const submitted = wrapper.emitted('submitted')
+		expect(submitted).toHaveLength(1)
+		expect(submitted![0][0]).toMatchObject({ isPublic: false })
+	})
+})
+
 describe('SharePanel notes', () => {
 	it('summarizes expiration and password when both are set', () => {
 		const data = schema({
