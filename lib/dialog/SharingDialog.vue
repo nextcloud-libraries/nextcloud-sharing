@@ -56,13 +56,12 @@
 
 		<template v-else-if="share">
 			<SharePanel
+				v-model:shareDialogTab="shareDialogTab"
 				:inSettings="inSettings"
 				:share="share"
 				:folderName="folderName"
-				:shareDialogTab="shareDialogTab"
 				@settingsWarning="settingsHasWarning = $event"
 				@settingsAvailable="settingsAvailable = $event"
-				@update:modelValue="shareDialogTab = $event"
 				@submitted="onSubmitted" />
 		</template>
 
