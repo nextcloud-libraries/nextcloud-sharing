@@ -132,7 +132,7 @@
 					class="share-panel__link-send"
 					variant="primary"
 					:aria-label="t('Send share link')"
-					:disabled="linkActionsDisabled || submitting"
+					:disabled="linkActionsDisabled || submitting || !canSubmit"
 					@click="sendLink">
 					<template #icon>
 						<NcLoadingIcon v-if="submitting" :size="20" />
@@ -231,6 +231,9 @@ const emit = defineEmits<{
 
 const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyone)
 
+// A share cannot be submitted without at least one recipient.
+const canSubmit = computed(() => props.share.recipients.length > 0)
+
 // Editable properties, permissions/presets, recipient search and link handling
 // live in dedicated composables; this component wires them to the template.
 const {
@@ -300,6 +303,11 @@ const shareTypes = [
 
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
+
+// Clear a stale submit error when switching between the invited/anyone tabs.
+watch(shareDialogTab, () => {
+	submitError.value = null
+})
 
 /**
  * Submit the share: activate the draft (which validates it and notifies mail
