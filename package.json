@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "build": "vite --mode production build",
-    "build:doc": "typedoc --out dist/doc lib/index.ts lib/public.ts lib/ui/index.ts && touch dist/doc/.nojekyll",
+    "build:doc": "typedoc --skipErrorChecking --out dist/doc lib/index.ts lib/public.ts lib/ui/index.ts && touch dist/doc/.nojekyll",
     "dev": "vite --mode development build",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
