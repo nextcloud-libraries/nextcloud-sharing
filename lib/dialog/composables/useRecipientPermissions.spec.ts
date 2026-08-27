@@ -4,7 +4,7 @@
  */
 
 import type { Share } from '../api/share.ts'
-import type { SharingPermission, SharingRecipient } from '../types/api.ts'
+import type { SharingOwner, SharingPermission, SharingRecipient } from '../types/api.ts'
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { CUSTOM_VALUE, useRecipientPermissions } from './useRecipientPermissions.ts'
@@ -20,26 +20,23 @@ vi.mock('@nextcloud/capabilities', () => ({
 	}),
 }))
 
-vi.mock('../utils/l10n.ts', () => ({ t: (s: string) => s }))
+vi.mock('../utils/l10n.ts', () => ({
+	t: (text: string, params: Record<string, string> = {}) => text.replace(/\{(\w+)\}/g, (_, k) => params[k] ?? `{${k}}`),
+}))
 
 function permission(cls: string, enabled: boolean, presets: string[]): SharingPermission {
-	return {
-		class: cls,
-		source_class: null,
-		display_name: cls,
-		hint: null,
-		priority: 0,
-		presets,
-		enabled,
-	}
+	return { class: cls, source_class: null, display_name: cls, hint: null, priority: 0, presets, enabled }
 }
+
+const alice: SharingOwner = { user_id: 'alice', instance: null, display_name: 'Alice', icon: { svg: '' } }
+const bob: SharingOwner = { user_id: 'bob', instance: null, display_name: 'Bob', icon: { svg: '' } }
 
 function recipient(overrides: Partial<SharingRecipient> = {}): SharingRecipient {
 	return {
 		class: 'UserRecipient',
-		value: 'bob',
+		value: 'carol',
 		instance: null,
-		display_name: 'Bob',
+		display_name: 'Carol',
 		icon: null,
 		secret: { updatable: false },
 		initiator: null,
@@ -49,72 +46,82 @@ function recipient(overrides: Partial<SharingRecipient> = {}): SharingRecipient 
 	}
 }
 
-/**
- * Build a fake Share exposing just what the composable reads/calls.
- *
- * @param permissions The share-level (maximum) permissions
- */
-function fakeShare(permissions: SharingPermission[]) {
+function fakeShare(permissions: SharingPermission[], preset: string | null = null, owner: SharingOwner = alice) {
 	return {
 		permissions,
-		recipients: [],
+		permissionPreset: preset,
+		data: { owner },
 		selectRecipientPreset: vi.fn().mockResolvedValue(undefined),
 		setRecipientPermission: vi.fn().mockResolvedValue(undefined),
 	} as unknown as Share
 }
 
 // Share grants read (in View + Edit) but not write (Edit-only) → max = { read }.
-function share() {
-	return fakeShare([
-		permission('read', true, ['View', 'Edit']),
-		permission('write', false, ['Edit']),
-	])
+function cappedShare(preset: string | null = 'View', owner: SharingOwner = alice) {
+	return fakeShare([permission('read', true, ['View', 'Edit']), permission('write', false, ['Edit'])], preset, owner)
 }
 
-describe('recipientPresetOptions', () => {
-	test('offers only presets whose member permissions are all within the share max', () => {
-		const { recipientPresetOptions } = useRecipientPermissions(share())
-		expect(recipientPresetOptions().map((o) => o.value)).toEqual(['View', CUSTOM_VALUE])
+describe('presetOptions', () => {
+	test('offers only presets within the share max', () => {
+		const { presetOptions } = useRecipientPermissions(cappedShare(), () => recipient())
+		expect(presetOptions.value.map((o) => o.value)).toEqual(['View', CUSTOM_VALUE])
 	})
 })
 
-describe('recipientPermissions', () => {
-	test('flags each toggle available only when granted at share level', () => {
-		const { recipientPermissions } = useRecipientPermissions(share())
+describe('permissions', () => {
+	test('flags availability against the share max', () => {
 		const r = recipient({ permissions: [permission('read', true, ['View']), permission('write', false, ['Edit'])] })
-		const perms = recipientPermissions(r)
-		expect(perms.find((p) => p.class === 'read')!.available).toBe(true)
-		expect(perms.find((p) => p.class === 'write')!.available).toBe(false)
+		const { permissions } = useRecipientPermissions(cappedShare(), () => r)
+		expect(permissions.value.find((p) => p.class === 'read')!.available).toBe(true)
+		expect(permissions.value.find((p) => p.class === 'write')!.available).toBe(false)
 	})
 })
 
-describe('recipientSelectedPreset', () => {
+describe('selectedPreset', () => {
 	test('falls back to custom when the recipient preset is not offered', () => {
-		const { recipientSelectedPreset } = useRecipientPermissions(share())
-		expect(recipientSelectedPreset(recipient({ permission_preset: 'Edit' })).value).toBe(CUSTOM_VALUE)
-		expect(recipientSelectedPreset(recipient({ permission_preset: 'View' })).value).toBe('View')
+		const { selectedPreset } = useRecipientPermissions(cappedShare(), () => recipient({ permission_preset: 'Edit' }))
+		expect(selectedPreset.value.value).toBe(CUSTOM_VALUE)
+	})
+})
+
+describe('notice', () => {
+	test('null when nothing is capped', () => {
+		const share = fakeShare([permission('read', true, ['View'])])
+		const r = recipient({ permissions: [permission('read', true, ['View'])] })
+		expect(useRecipientPermissions(share, () => r).notice.value).toBeNull()
+	})
+
+	test('reshare wording when the recipient initiator differs from the owner', () => {
+		const r = recipient({ initiator: bob, permissions: [permission('write', false, ['Edit'])] })
+		const { notice } = useRecipientPermissions(cappedShare('View'), () => r)
+		expect(notice.value).toBe('Alice shared this with you as "Can view". You can only grant the same or fewer permissions.')
+	})
+
+	test('default wording when not a reshare', () => {
+		const r = recipient({ initiator: alice, permissions: [permission('write', false, ['Edit'])] })
+		const { notice } = useRecipientPermissions(cappedShare('View'), () => r)
+		expect(notice.value).toBe('This share is limited to "Can view". You can only grant the same or fewer permissions.')
 	})
 })
 
 describe('mutations', () => {
-	let s: Share
+	let share: Share
 
 	beforeEach(() => {
-		s = share()
+		share = cappedShare()
 	})
 
-	test('onRecipientPresetChange forwards to the share, skipping custom', async () => {
-		const { onRecipientPresetChange } = useRecipientPermissions(s)
-		const r = recipient()
-		await onRecipientPresetChange(r, { value: CUSTOM_VALUE, label: 'Can…' })
-		expect(s.selectRecipientPreset).not.toHaveBeenCalled()
-		await onRecipientPresetChange(r, { value: 'View', label: 'Can view' })
-		expect(s.selectRecipientPreset).toHaveBeenCalledWith('UserRecipient', 'bob', 'View', undefined)
+	test('onPresetChange forwards to the share, skipping custom', async () => {
+		const { onPresetChange } = useRecipientPermissions(share, () => recipient())
+		await onPresetChange({ value: CUSTOM_VALUE, label: 'Can…' })
+		expect(share.selectRecipientPreset).not.toHaveBeenCalled()
+		await onPresetChange({ value: 'View', label: 'Can view' })
+		expect(share.selectRecipientPreset).toHaveBeenCalledWith('UserRecipient', 'carol', 'View', undefined)
 	})
 
-	test('onRecipientPermissionToggle forwards to the share', async () => {
-		const { onRecipientPermissionToggle } = useRecipientPermissions(s)
-		await onRecipientPermissionToggle(recipient(), permission('read', false, ['View']), true)
-		expect(s.setRecipientPermission).toHaveBeenCalledWith('UserRecipient', 'bob', 'read', true, undefined)
+	test('onPermissionToggle forwards to the share', async () => {
+		const { onPermissionToggle } = useRecipientPermissions(share, () => recipient())
+		await onPermissionToggle(permission('read', false, ['View']), true)
+		expect(share.setRecipientPermission).toHaveBeenCalledWith('UserRecipient', 'carol', 'read', true, undefined)
 	})
 })

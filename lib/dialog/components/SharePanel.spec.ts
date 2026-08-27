@@ -119,26 +119,25 @@ beforeEach(() => {
 describe('SharePanel presets and permissions', () => {
 	it('applies a preset on selection', async () => {
 		const { wrapper, share } = mountPanel()
-		const select = wrapper.findComponent({ name: 'NcSelect' })
-		select.vm.$emit('update:modelValue', { value: PRESET_EDIT, label: 'Can edit' })
+		wrapper.findComponent({ name: 'PermissionEditor' }).vm.$emit('presetChange', { value: PRESET_EDIT, label: 'Can edit' })
 		await flushPromises()
 		expect(share.selectPreset).toHaveBeenCalledWith(PRESET_EDIT)
 	})
 
 	it('does not call the backend when picking the custom entry', async () => {
 		const { wrapper, share } = mountPanel()
-		wrapper.findComponent({ name: 'NcSelect' }).vm.$emit('update:modelValue', { value: 'custom', label: 'Can…' })
+		wrapper.findComponent({ name: 'PermissionEditor' }).vm.$emit('presetChange', { value: 'custom', label: 'Can…' })
 		await flushPromises()
 		expect(share.selectPreset).not.toHaveBeenCalled()
-		// The permission toggles become visible in custom mode.
-		expect(wrapper.findComponent({ name: 'NcFormBoxSwitch' }).exists()).toBe(true)
+		// The editor is told to reveal the toggles in custom mode.
+		expect(wrapper.findComponent({ name: 'PermissionEditor' }).props('showPermissions')).toBe(true)
 	})
 
 	it('toggles a single permission in custom mode', async () => {
 		const { wrapper, share } = mountPanel(schema({ permission_preset: null }))
-		const toggles = wrapper.findAllComponents({ name: 'NcFormBoxSwitch' })
-		// perm-write is the second, currently disabled → enable it
-		toggles[1].vm.$emit('update:modelValue', true)
+		const editor = wrapper.findComponent({ name: 'PermissionEditor' })
+		const write = editor.props('permissions').find((p: { class: string }) => p.class === PERM_WRITE)
+		editor.vm.$emit('permissionToggle', write, true)
 		await flushPromises()
 		expect(share.setPermission).toHaveBeenCalledWith(PERM_WRITE, true)
 	})

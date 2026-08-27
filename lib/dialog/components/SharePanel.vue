@@ -39,39 +39,17 @@
 				<RecipientList :share="share" />
 			</template>
 
-			<!-- Permissions - core feature -->
-			<NcSelect
-				:modelValue="selectedPresetOption"
-				:clearable="false"
-				:searchable="false"
-				:inputLabel="presetSelectLabel"
-				:options="presetOptions"
-				class="share-panel__permissions-preset-select"
-				:placeholder="t('Can…')"
-				@update:modelValue="onPresetChange" />
-
-			<!-- Fine-grained permission toggles, shown while "Can…" is selected -->
-			<Transition name="expand">
-				<div v-if="showPermissions" class="share-panel__permissions">
-					<div class="share-panel__permissions-inner">
-						<NcFormBox>
-							<NcFormBoxSwitch
-								v-for="permission in permissions"
-								:key="permission.class"
-								:label="permission.display_name"
-								:description="permission.hint ?? undefined"
-								:error="permissionErrors[permission.class]"
-								:modelValue="permission.enabled"
-								@update:modelValue="(enabled) => onPermissionToggle(permission, enabled)" />
-						</NcFormBox>
-					</div>
-				</div>
-			</Transition>
-
-			<!-- Preset-level error (the toggles are hidden while a preset is selected) -->
-			<NcNoteCard v-if="presetError" type="error">
-				{{ presetError }}
-			</NcNoteCard>
+			<!-- Permissions: default/max for the share (reused per-recipient) -->
+			<PermissionEditor
+				:presetOptions="presetOptions"
+				:selectedPreset="selectedPresetOption"
+				:showPermissions="showPermissions"
+				:permissions="permissions"
+				:permissionErrors="permissionErrors"
+				:presetError="presetError"
+				:presetLabel="presetSelectLabel"
+				@presetChange="onPresetChange"
+				@permissionToggle="onPermissionToggle" />
 
 			<!-- First-page properties (e.g. Note to recipients) -->
 			<template v-for="property in firstPageProperties" :key="property.class">
@@ -193,16 +171,14 @@ import IconSend from '@mdi/svg/svg/send-outline.svg?raw'
 import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
 import { computed, ref, watch } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
-import NcFormBox from '@nextcloud/vue/components/NcFormBox'
-import NcFormBoxSwitch from '@nextcloud/vue/components/NcFormBoxSwitch'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcRadioGroup from '@nextcloud/vue/components/NcRadioGroup'
 import NcRadioGroupButton from '@nextcloud/vue/components/NcRadioGroupButton'
-import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcSelectUsers from '@nextcloud/vue/components/NcSelectUsers'
 import InlineToggleField from './InlineToggleField.vue'
+import PermissionEditor from './PermissionEditor.vue'
 import PropertyField from './PropertyField.vue'
 import RecipientList from './RecipientList.vue'
 import { useLinkShare } from '../composables/useLinkShare.ts'
@@ -346,33 +322,6 @@ form.share-panel {
 	// letting flex shrink (compress) them to fit the max-height.
 	> * {
 		flex-shrink: 0;
-	}
-}
-
-// Animate the permission list open/closed via the grid-rows 0fr→1fr trick.
-.share-panel__permissions {
-	display: grid;
-	grid-template-rows: 1fr;
-}
-
-.share-panel__permissions-inner {
-	overflow: hidden;
-}
-
-.expand-enter-active,
-.expand-leave-active {
-	transition: grid-template-rows 0.2s ease-in-out;
-}
-
-.expand-enter-from,
-.expand-leave-to {
-	grid-template-rows: 0fr;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.expand-enter-active,
-	.expand-leave-active {
-		transition: none;
 	}
 }
 
