@@ -51,6 +51,10 @@ export interface SharingRecipient {
 	icon: SharingIcon | null
 	secret: SharingRecipientSecret
 	initiator: SharingOwner | null
+	/** Class of the preset matching this recipient's enabled permissions, null when custom */
+	permission_preset: string | null
+	/** Per-recipient permissions, capped at the share-level (maximum) permissions */
+	permissions: SharingPermission[]
 }
 
 // --- Owner ---

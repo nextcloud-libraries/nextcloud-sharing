@@ -23,16 +23,21 @@
 				</NcRadioGroupButton>
 			</NcRadioGroup>
 
-			<NcSelectUsers
-				v-if="shareDialogTab === ShareDialogTab.InvitedPeople"
-				v-model="selectedRecipient"
-				class="share-panel__recipient-search"
-				:multiple="false"
-				:inputLabel="t('Add people')"
-				:options="results"
-				:loading="searching"
-				:placeholder="t('Name, team, email or federated cloud ID')"
-				@search="onSearchDebounced" />
+			<template v-if="shareDialogTab === ShareDialogTab.InvitedPeople">
+				<NcSelectUsers
+					:modelValue="selectedRecipients"
+					class="share-panel__recipient-search"
+					:multiple="true"
+					:inputLabel="t('Add people')"
+					:options="results"
+					:loading="searching"
+					:placeholder="t('Name, team, email or federated cloud ID')"
+					@update:modelValue="onSelectRecipients"
+					@search="onSearchDebounced" />
+
+				<!-- Selected recipients with per-recipient permissions -->
+				<RecipientList :share="share" />
+			</template>
 
 			<!-- Permissions - core feature -->
 			<NcSelect
@@ -199,6 +204,7 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcSelectUsers from '@nextcloud/vue/components/NcSelectUsers'
 import InlineToggleField from './InlineToggleField.vue'
 import PropertyField from './PropertyField.vue'
+import RecipientList from './RecipientList.vue'
 import { useLinkShare } from '../composables/useLinkShare.ts'
 import { usePermissionPresets } from '../composables/usePermissionPresets.ts'
 import { useRecipientSearch } from '../composables/useRecipientSearch.ts'
@@ -256,7 +262,7 @@ const {
 	onPermissionToggle,
 } = usePermissionPresets(props.share)
 
-const { results, selectedRecipient, searching, onSearch: onSearchDebounced } = useRecipientSearch(props.share)
+const { results, selected: selectedRecipients, searching, onSelect: onSelectRecipients, onSearch: onSearchDebounced } = useRecipientSearch(props.share)
 
 const {
 	linkRecipientLoading,
@@ -294,7 +300,7 @@ const folderUploadHint = computed<string | null>(() => isLinkShare.value && prop
 	: null)
 
 const copyLinkLabel = computed(() => isLinkShare.value ? t('Copy public link') : t('Copy private link'))
-const presetSelectLabel = computed(() => isLinkShare.value ? t('Anyone with the link') : t('Participants'))
+const presetSelectLabel = computed(() => isLinkShare.value ? t('Anyone with the link') : t('Default permission'))
 
 const shareTypes = [
 	{ id: ShareDialogTab.InvitedPeople, label: t('Invited people'), iconSvgInline: AccountPlusOutlineIconSvg },
