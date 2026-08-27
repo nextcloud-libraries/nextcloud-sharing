@@ -1,6 +1,11 @@
 {
-	"include": ["lib/**/*.ts"],
-	"exclude": ["lib/**/*.spec.ts"],
+	"include": [
+		"lib/**/*.ts",
+		"lib/**/*.vue"
+	],
+	"exclude": [
+		"lib/**/*.spec.ts"
+	],
 	"compilerOptions": {
 		"rootDir": "lib",
 		"target": "esnext",
@@ -9,9 +14,11 @@
 		"declaration": true,
 		"outDir": "./dist",
 		"strict": true,
-		"lib": ["ES2024", "DOM"],
-
+		"lib": [
+			"ES2024",
+			"DOM"
+		],
 		"allowImportingTsExtensions": true,
-		"rewriteRelativeImportExtensions": true,
+		"skipLibCheck": true
 	}
 }

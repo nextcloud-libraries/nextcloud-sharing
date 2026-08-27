@@ -1,0 +1,143 @@
+<!--
+  SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<template>
+	<div class="share-confirmation">
+		<NcEmptyContent
+			class="share-confirmation__header"
+			:name="isPublic ? t('Your share link is ready') : t('Your share is ready')">
+			<template #icon>
+				<NcIconSvgWrapper class="share-confirmation__icon" :svg="IconCheckCircle" />
+			</template>
+		</NcEmptyContent>
+
+		<template v-if="link">
+			<!-- Copy the link, with an inline copy button inside the field -->
+			<NcInputField
+				class="share-confirmation__link-input"
+				:label="t('Share link')"
+				:modelValue="link"
+				readonly
+				showTrailingButton
+				:trailingButtonLabel="copied ? t('Copied!') : t('Copy to clipboard')"
+				@trailingButtonClick="copyLink">
+				<template #trailing-button-icon>
+					<NcIconSvgWrapper :svg="copied ? IconCheck : IconContentCopy" :size="20" />
+				</template>
+			</NcInputField>
+
+			<!-- Optional QR code for a public link -->
+			<template v-if="isPublic">
+				<NcButton
+					class="share-confirmation__qr-toggle"
+					variant="tertiary"
+					@click="showQrCode = !showQrCode">
+					<template #icon>
+						<NcIconSvgWrapper :svg="IconQrcode" :size="20" />
+					</template>
+					{{ showQrCode ? t('Hide QR code') : t('Show QR code') }}
+				</NcButton>
+				<QrcodeVue
+					v-if="showQrCode"
+					class="share-confirmation__qr"
+					:value="link"
+					:size="200"
+					:margin="2"
+					level="M"
+					background="#ffffff"
+					foreground="#000000" />
+			</template>
+		</template>
+
+		<NcButton
+			class="share-confirmation__done"
+			variant="primary"
+			@click="emit('close')">
+			{{ t('Done') }}
+		</NcButton>
+	</div>
+</template>
+
+<script setup lang="ts">
+import IconCheckCircle from '@mdi/svg/svg/check-circle-outline.svg?raw'
+import IconCheck from '@mdi/svg/svg/check.svg?raw'
+import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
+import IconQrcode from '@mdi/svg/svg/qrcode.svg?raw'
+import { ref } from 'vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import NcInputField from '@nextcloud/vue/components/NcInputField'
+import QrcodeVue from 'qrcode.vue'
+import { copyToClipboard } from '../utils/clipboard.ts'
+import { t } from '../utils/l10n.ts'
+import { logger } from '../utils/logger.ts'
+
+const props = defineProps<{
+	/** The share link to present, or null when there is none */
+	link: string | null
+	/** Whether this is a public (link) share, enabling the QR code */
+	isPublic: boolean
+}>()
+
+const emit = defineEmits<{
+	(e: 'close'): void
+}>()
+
+const copied = ref(false)
+const showQrCode = ref(false)
+
+/**
+ * Copy the link to the clipboard and briefly reflect it in the button.
+ */
+async function copyLink() {
+	if (!props.link) {
+		return
+	}
+	try {
+		await copyToClipboard(props.link)
+		copied.value = true
+		setTimeout(() => {
+			copied.value = false
+		}, 2000)
+	} catch (e) {
+		logger.error('Failed to copy link to clipboard', { error: e })
+	}
+}
+</script>
+
+<style scoped lang="scss">
+.share-confirmation {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--default-grid-baseline) * 3);
+	padding-block-end: calc(var(--default-grid-baseline) * 3);
+
+	&__header {
+		// Tighten the empty-content spacing inside the dialog.
+		margin: 0 !important;
+		padding-block: calc(var(--default-grid-baseline) * 2) 0;
+	}
+
+	&__icon {
+		color: var(--color-success);
+	}
+
+	&__link-input {
+		width: 100%;
+	}
+
+	&__qr {
+		// Always a light card so the code stays scannable in dark mode.
+		background-color: #fff;
+		padding: var(--default-grid-baseline);
+		border-radius: var(--border-radius-element);
+	}
+
+	&__done {
+		align-self: stretch;
+	}
+}
+</style>
