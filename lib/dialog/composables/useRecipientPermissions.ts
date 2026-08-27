@@ -67,7 +67,8 @@ export function useRecipientPermissions(share: Share, getRecipient: () => Sharin
 
 	const permissions = computed<RecipientPermission[]>(() => {
 		const max = shareMax.value
-		return recipient.value.permissions.map((permission) => ({
+		// The backend may not (yet) return per-recipient permissions.
+		return (recipient.value.permissions ?? []).map((permission) => ({
 			...permission,
 			available: max.has(permission.class),
 		}))

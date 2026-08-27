@@ -15,25 +15,27 @@
 
 		<div class="recipient-row__desc">
 			<span class="recipient-row__name">{{ recipient.display_name }}</span>
-			<NcSelect
-				class="recipient-row__preset"
-				:modelValue="selectedPreset"
-				:clearable="false"
-				:searchable="false"
-				:inputLabel="t('Permissions')"
-				:hideLabel="true"
-				:options="presetOptions"
-				:placeholder="t('Can…')"
-				@update:modelValue="onPresetChange" />
+			<span class="recipient-row__subtitle">{{ currentPresetLabel }}</span>
 		</div>
 
-		<NcActions class="recipient-row__actions" :aria-label="t('Recipient actions')">
+		<NcActions class="recipient-row__actions" :aria-label="t('Recipient actions')" :forceMenu="true">
+			<NcActionCaption :name="t('Permissions')" />
+			<NcActionButton
+				v-for="preset in presets"
+				:key="preset.value"
+				@click="onPresetChange(preset)">
+				<template #icon>
+					<NcIconSvgWrapper v-if="preset.value === currentPresetValue" :svg="IconCheck" :size="20" />
+				</template>
+				{{ preset.label }}
+			</NcActionButton>
 			<NcActionButton @click="modalOpen = true">
 				<template #icon>
-					<NcIconSvgWrapper :svg="IconTune" :size="20" />
+					<NcIconSvgWrapper :svg="isCustom ? IconCheck : IconTune" :size="20" />
 				</template>
 				{{ t('Custom permissions') }}
 			</NcActionButton>
+			<NcActionSeparator />
 			<NcActionButton @click="remove">
 				<template #icon>
 					<NcIconSvgWrapper :svg="IconDelete" :size="20" />
@@ -65,19 +67,22 @@
 
 <script setup lang="ts">
 import type { Share } from '../api/share.ts'
+import type { PresetOption } from '../composables/useRecipientPermissions.ts'
 import type { SharingRecipient } from '../types/api.ts'
 
+import IconCheck from '@mdi/svg/svg/check.svg?raw'
 import IconDelete from '@mdi/svg/svg/delete.svg?raw'
 import IconTune from '@mdi/svg/svg/tune-variant.svg?raw'
 import { computed, ref } from 'vue'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcActionCaption from '@nextcloud/vue/components/NcActionCaption'
 import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
-import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PermissionEditor from './PermissionEditor.vue'
-import { useRecipientPermissions } from '../composables/useRecipientPermissions.ts'
+import { CUSTOM_VALUE, useRecipientPermissions } from '../composables/useRecipientPermissions.ts'
 import { RECIPIENT_TYPE_USER } from '../constants.ts'
 import { t } from '../utils/l10n.ts'
 import { logger } from '../utils/logger.ts'
@@ -105,6 +110,13 @@ const {
 	onPermissionToggle,
 } = useRecipientPermissions(props.share, () => props.recipient)
 
+const currentPresetValue = computed(() => selectedPreset.value.value)
+const isCustom = computed(() => currentPresetValue.value === CUSTOM_VALUE)
+// Preset shortcuts in the menu, excluding the "custom" sentinel.
+const presets = computed<PresetOption[]>(() => presetOptions.value.filter((option) => option.value !== CUSTOM_VALUE))
+// Static label shown under the recipient name.
+const currentPresetLabel = computed(() => isCustom.value ? t('Custom permissions') : selectedPreset.value.label)
+
 /**
  * Remove this recipient from the share.
  */
@@ -129,21 +141,18 @@ async function remove() {
 		flex-direction: column;
 		flex: 1 1 auto;
 		min-width: 0;
+		line-height: 1.2em;
 	}
 
-	&__name {
+	&__name,
+	&__subtitle {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	// Compact, borderless preset dropdown sitting under the name.
-	&__preset {
-		min-width: 0;
-		:deep(.vs__dropdown-toggle) {
-			border: none;
-			color: var(--color-text-maxcontrast);
-		}
+	&__subtitle {
+		color: var(--color-text-maxcontrast);
 	}
 
 	&__actions {

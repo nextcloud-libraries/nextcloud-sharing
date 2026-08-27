@@ -6,7 +6,9 @@
 	<form class="share-panel" @submit.prevent>
 		<!-- First page view -->
 		<template v-if="!inSettings">
+			<!-- Share type is committed once a recipient (or the link) exists -->
 			<NcRadioGroup
+				v-if="!hasRecipients"
 				class="share-panel__tab-bar"
 				:modelValue="shareDialogTab"
 				:label="t('Share type')"
@@ -216,6 +218,9 @@ const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyon
 // A share cannot be submitted without at least one recipient.
 const canSubmit = computed(() => props.share.recipients.length > 0)
 
+// Once a recipient (or the link) exists, the share type is committed.
+const hasRecipients = computed(() => props.share.recipients.length > 0)
+
 // Editable properties, permissions/presets, recipient search and link handling
 // live in dedicated composables; this component wires them to the template.
 const {
@@ -322,7 +327,12 @@ form.share-panel {
 	// letting flex shrink (compress) them to fit the max-height.
 	> * {
 		flex-shrink: 0;
+		min-width: 0;
 	}
+}
+
+.share-panel__recipient-search {
+	width: 100%;
 }
 
 .share-panel__link-actions {
