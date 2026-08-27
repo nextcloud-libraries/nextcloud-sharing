@@ -8,7 +8,7 @@ import type { SharingShare } from '../types/api.ts'
 import { flushPromises, shallowMount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SharePanel from './SharePanel.vue'
-import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, SOURCE_TYPE_NODE } from '../constants.ts'
+import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, RECIPIENT_TYPE_USER, SOURCE_TYPE_NODE } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 
 const PRESET_VIEW = 'preset-view'
@@ -140,6 +140,30 @@ describe('SharePanel presets and permissions', () => {
 		editor.vm.$emit('permissionToggle', write, true)
 		await flushPromises()
 		expect(share.setPermission).toHaveBeenCalledWith(PERM_WRITE, true)
+	})
+})
+
+describe('SharePanel tab bar', () => {
+	const recipient = {
+		class: RECIPIENT_TYPE_USER,
+		value: 'bob',
+		instance: null,
+		display_name: 'Bob',
+		icon: null,
+		secret: { updatable: false },
+		initiator: null,
+		permission_preset: null,
+		permissions: [],
+	}
+
+	it('shows the share-type tabs when there are no recipients', () => {
+		const { wrapper } = mountPanel()
+		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+	})
+
+	it('hides the share-type tabs once a recipient exists', () => {
+		const { wrapper } = mountPanel(schema({ recipients: [recipient] }))
+		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(false)
 	})
 })
 

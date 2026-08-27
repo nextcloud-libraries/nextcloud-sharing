@@ -46,8 +46,8 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "test": "vitest run",
-    "test:ct": "playwright test -c playwright-ct.config.ts",
     "test:coverage": "vitest run --coverage",
+    "test:ct": "playwright test -c playwright-ct.config.ts",
     "test:watch": "vitest run --watch",
     "ts:check": "vue-tsc --noEmit",
     "watch": "vite --mode development build --watch"

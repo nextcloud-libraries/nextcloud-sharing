@@ -6,7 +6,7 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 
 export default defineConfig({
-	testDir: './lib',
+	testDir: './tests/ct',
 	// Component tests are named *.ct.ts so Vitest (which globs *.spec/*.test)
 	// ignores them and only Playwright picks them up.
 	testMatch: '**/*.ct.ts',

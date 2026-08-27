@@ -4,7 +4,7 @@
  */
 
 import { expect, test } from '@playwright/experimental-ct-vue'
-import Fixture from '../../../tests/ct/fixtures/RecipientRowFixture.vue'
+import Fixture from './fixtures/RecipientRowFixture.vue'
 
 test('shows the recipient name and a static preset subtitle', async ({ mount }) => {
 	const component = await mount(Fixture)
@@ -20,7 +20,7 @@ test('removes the recipient from the menu', async ({ mount, page }) => {
 	}
 	const component = await mount(Fixture, { on: { removed: onRemoved } })
 	await component.getByRole('button', { name: 'Recipient actions' }).click()
-	await page.getByRole('menuitem', { name: 'Remove' }).click()
+	await page.getByRole('menuitem', { name: 'Remove participant' }).click()
 	expect(removed).toBe(true)
 })
 

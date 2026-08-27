@@ -33,5 +33,6 @@ const recipients = computed(() => props.share.recipients.filter((recipient) => r
 	display: flex;
 	flex-direction: column;
 	gap: calc(var(--default-grid-baseline) * 3);
+	padding-inline-start: calc(var(--default-grid-baseline) * 2);
 }
 </style>

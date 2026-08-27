@@ -4,7 +4,7 @@
  */
 
 import { expect, test } from '@playwright/experimental-ct-vue'
-import PermissionEditor from './PermissionEditor.vue'
+import PermissionEditor from '../../lib/dialog/components/PermissionEditor.vue'
 
 const baseProps = {
 	presetOptions: [{ value: 'View', label: 'Can view' }, { value: 'custom', label: 'Can…' }],

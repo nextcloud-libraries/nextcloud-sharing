@@ -4,7 +4,7 @@
  */
 
 import { expect, test } from '@playwright/experimental-ct-vue'
-import Fixture from '../../../tests/ct/fixtures/RecipientListFixture.vue'
+import Fixture from './fixtures/RecipientListFixture.vue'
 
 test('renders a row per recipient, excluding the link (token)', async ({ mount }) => {
 	const component = await mount(Fixture)
