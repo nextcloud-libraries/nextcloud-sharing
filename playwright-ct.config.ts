@@ -6,10 +6,10 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-vue'
 
 export default defineConfig({
+	// Component tests live under tests/ct/ (excluded from Vitest in
+	// vitest.config), so Playwright owns this directory.
 	testDir: './tests/ct',
-	// Component tests are named *.ct.ts so Vitest (which globs *.spec/*.test)
-	// ignores them and only Playwright picks them up.
-	testMatch: '**/*.ct.ts',
+	testMatch: '**/*.spec.ts',
 	snapshotDir: './tests/ct/__snapshots__',
 	fullyParallel: true,
 	use: {
