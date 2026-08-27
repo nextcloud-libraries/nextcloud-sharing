@@ -7,6 +7,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0-beta.1 - 2026-08-27
+First beta of the 1.0 line. Published on npm under the `next` tag.
+
+### Added
+* feat(dialog): experimental sharing dialog for the unified sharing API, exposed via the new `./dialog` entry point [\#239](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/239)
+* feat(dialog): confirmation screen after submitting a share
+
+### Changed
+* build: replace the TypeScript-only bundling with a Vite library build, adding `./ui`, `./public` and `./dialog` subpath exports
+* build: depend on the published `@nextcloud/vue` package and refresh the tooling
+
+### Fixed
+* fix(dialog): copy the link reliably in non-secure contexts
+* fix(dialog): require a recipient to submit and clear the error on tab switch
+* fix(dialog): dark-mode safe confirmation with optional QR code
+
 ## 0.4.0 - 2026-02-11
 ### Changed
 * chore(deps): Allow `@nextcloud/files` v3 or v4 as dependencies for Nextcloud 33+ support [\#158](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/158)
