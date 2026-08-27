@@ -63,3 +63,8 @@ typings/
 .next
 
 /dist
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
