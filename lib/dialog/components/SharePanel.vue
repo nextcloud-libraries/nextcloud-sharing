@@ -334,13 +334,14 @@ form.share-panel {
 .share-panel__recipient-search {
 	width: 100%;
 
-	// NcSelectUsers (vue-select) defaults to min-width: 260px, which can force the
-	// control wider than the dialog and let its focus box-shadow spill past the
-	// padding. Pin it to the container like the preset select.
 	:deep(.select) {
+		// Don't let the vue-select default (min-width: 260px) force the control
+		// wider than the dialog.
 		min-width: 0;
-		max-width: 100%;
-		box-sizing: border-box;
+		// @nextcloud/vue's multiple select (.select.vs--multiple) renders ~2px too
+		// wide and overflows its container (visible in the nc-vue docs too);
+		// inset it by 1px each side to compensate. Remove once fixed upstream.
+		margin-inline: 1px;
 	}
 }
 
