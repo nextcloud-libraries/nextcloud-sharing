@@ -333,16 +333,6 @@ form.share-panel {
 
 .share-panel__recipient-search {
 	width: 100%;
-
-	:deep(.select) {
-		// Don't let the vue-select default (min-width: 260px) force the control
-		// wider than the dialog.
-		min-width: 0;
-		// @nextcloud/vue's multiple select (.select.vs--multiple) renders ~2px too
-		// wide and overflows its container (visible in the nc-vue docs too);
-		// inset it by 1px each side to compensate. Remove once fixed upstream.
-		margin-inline: 1px;
-	}
 }
 
 .share-panel__link-actions {
