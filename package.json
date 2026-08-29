@@ -63,7 +63,7 @@
     "debounce": "^3.0.0",
     "is-svg": "^6.1.0",
     "qrcode.vue": "^3.10.0",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
     "@nextcloud/eslint-config": "^9.0.1",
