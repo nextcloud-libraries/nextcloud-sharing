@@ -7,6 +7,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0-beta.2 - 2026-09-02
+Second beta of the 1.0 line. Published on npm under the `next` tag.
+
+### Added
+* feat(dialog): share with multiple recipients, each rendered as its own row [\#258](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/258)
+* feat(dialog): per-recipient permission editing, capped at the permissions the share grants
+* feat(dialog): delete a share from the sharing settings
+
+### Changed
+* feat(dialog): only offer the share type while the share is a draft, and confirm before dropping invited people when switching to a public link
+* feat(dialog): float the action bars and keep a minimum dialog height so it stops jumping between states
+* build: bump `@nextcloud/vue` to 9.11.0
+
+### Fixed
+* fix(dialog): open an existing share on the view matching its type; editing a link share no longer removes its token, which destroyed the public link
+* fix(dialog): treat recipient permissions as sparse overrides on the share's permissions, so a recipient shows the share default until it is changed
+* fix(dialog): stop the recipient picker overflowing the dialog
+
 ## 1.0.0-beta.1 - 2026-08-27
 First beta of the 1.0 line. Published on npm under the `next` tag.
 
