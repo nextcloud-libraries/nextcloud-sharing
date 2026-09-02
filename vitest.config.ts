@@ -4,7 +4,7 @@
  */
 
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
 	plugins: [vue()],
@@ -14,10 +14,14 @@ export default defineConfig({
 	},
 	test: {
 		environment: 'happy-dom',
+		// Playwright component tests live under tests/ct/ and must not be run by Vitest.
+		exclude: [...configDefaults.exclude, 'tests/ct/**'],
 		// @nextcloud/vue ships ESM + CSS that must be transformed by Vite in tests.
 		server: {
 			deps: {
-				inline: [/@nextcloud\/vue/],
+				// @nextcloud/dialogs pulls @nextcloud/vue components (and their CSS),
+				// both must be transformed by Vite in tests.
+				inline: [/@nextcloud\/vue/, /@nextcloud\/dialogs/],
 			},
 		},
 		coverage: {

@@ -173,6 +173,31 @@ export async function selectSharePermissionPreset(shareId: string, presetClass: 
 }
 
 /**
+ * Update a single permission for one recipient of a share.
+ *
+ * The backend caps the recipient's permissions at the share-level permissions
+ * (the maximum), which are themselves bounded by the sharer's own permissions
+ * on a reshare, or the admin default.
+ *
+ * @param shareId
+ * @param recipientClass
+ * @param recipientValue
+ * @param permissionClass
+ * @param enabled
+ * @param instance
+ */
+export async function updateShareRecipientPermission(shareId: string, recipientClass: string, recipientValue: string, permissionClass: string, enabled: boolean, instance?: string): Promise<SharingShare> {
+	const response = await axios.put(sharingUrl(`/share/${shareId}/recipient/permission`), {
+		recipientClass,
+		recipientValue,
+		recipientInstance: instance ?? null,
+		permissionClass,
+		enabled,
+	})
+	return unwrapOcs<SharingShare>(response)
+}
+
+/**
  * Update the state of a share (draft → active → deleted).
  *
  * @param shareId

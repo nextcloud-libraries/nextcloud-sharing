@@ -29,7 +29,7 @@ export interface PresetOption {
 export function usePermissionPresets(share: Share) {
 	// Presets registered on the server, with their translated display names.
 	const capabilityPresets: SharingPermissionPreset[] = (getCapabilities() as Partial<SharingCapabilities>).sharing?.permission_presets ?? []
-	const customOption: PresetOption = { value: CUSTOM_VALUE, label: t('Can…') }
+	const customOption: PresetOption = { value: CUSTOM_VALUE, label: t('Custom permissions') }
 
 	// Preserve first-seen order so toggling a permission never reorders the list
 	// (the backend may return permissions in a different order after an update).

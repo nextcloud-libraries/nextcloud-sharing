@@ -8,7 +8,7 @@ import type { SharingShare } from '../types/api.ts'
 import { flushPromises, shallowMount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SharePanel from './SharePanel.vue'
-import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, SOURCE_TYPE_NODE } from '../constants.ts'
+import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, RECIPIENT_TYPE_USER, SOURCE_TYPE_NODE } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 
 const PRESET_VIEW = 'preset-view'
@@ -35,6 +35,35 @@ vi.mock('../api/share.ts', () => ({
 	searchRecipients: vi.fn().mockResolvedValue([]),
 }))
 
+// Confirm dialog: answers with the last button (the destructive one) by default;
+// set `confirmation.declined` to answer with the first one ("Cancel") instead.
+const confirmation = vi.hoisted(() => ({ declined: false }))
+
+vi.mock('@nextcloud/dialogs', () => ({
+	DialogBuilder: class {
+		buttons: { callback: () => void }[] = []
+		setName() {
+			return this
+		}
+
+		setText() {
+			return this
+		}
+
+		setButtons(buttons: { callback: () => void }[]) {
+			this.buttons = buttons
+			return this
+		}
+
+		build() {
+			const { buttons } = this
+			return {
+				show: async () => (confirmation.declined ? buttons.at(0) : buttons.at(-1))?.callback(),
+			}
+		}
+	},
+}))
+
 /**
  * Build a share schema.
  *
@@ -53,7 +82,6 @@ function schema(overrides: Partial<SharingShare> = {}): SharingShare {
 			{ class: PERM_READ, source_class: null, display_name: 'Read', hint: null, priority: 10, presets: [PRESET_VIEW, PRESET_EDIT], enabled: true },
 			{ class: PERM_WRITE, source_class: null, display_name: 'Write', hint: null, priority: 20, presets: [PRESET_EDIT], enabled: false },
 		],
-		permission_preset: null,
 		...overrides,
 	}
 }
@@ -65,6 +93,7 @@ interface FakeShare {
 	addRecipient: ReturnType<typeof vi.fn>
 	removeRecipient: ReturnType<typeof vi.fn>
 	activate: ReturnType<typeof vi.fn>
+	delete: ReturnType<typeof vi.fn>
 }
 
 /**
@@ -88,6 +117,7 @@ function fakeShare(data: SharingShare): Share & FakeShare {
 		addRecipient: vi.fn().mockResolvedValue(undefined),
 		removeRecipient: vi.fn().mockResolvedValue(undefined),
 		activate: vi.fn().mockResolvedValue(undefined),
+		delete: vi.fn().mockResolvedValue(undefined),
 	} as unknown as Share & FakeShare
 }
 
@@ -114,33 +144,111 @@ function mountPanel(data: SharingShare = schema(), props: Record<string, unknown
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	confirmation.declined = false
 })
 
 describe('SharePanel presets and permissions', () => {
 	it('applies a preset on selection', async () => {
 		const { wrapper, share } = mountPanel()
-		const select = wrapper.findComponent({ name: 'NcSelect' })
-		select.vm.$emit('update:modelValue', { value: PRESET_EDIT, label: 'Can edit' })
+		wrapper.findComponent({ name: 'PermissionEditor' }).vm.$emit('presetChange', { value: PRESET_EDIT, label: 'Can edit' })
 		await flushPromises()
 		expect(share.selectPreset).toHaveBeenCalledWith(PRESET_EDIT)
 	})
 
 	it('does not call the backend when picking the custom entry', async () => {
 		const { wrapper, share } = mountPanel()
-		wrapper.findComponent({ name: 'NcSelect' }).vm.$emit('update:modelValue', { value: 'custom', label: 'Can…' })
+		wrapper.findComponent({ name: 'PermissionEditor' }).vm.$emit('presetChange', { value: 'custom', label: 'Can…' })
 		await flushPromises()
 		expect(share.selectPreset).not.toHaveBeenCalled()
-		// The permission toggles become visible in custom mode.
-		expect(wrapper.findComponent({ name: 'NcFormBoxSwitch' }).exists()).toBe(true)
+		// The editor is told to reveal the toggles in custom mode.
+		expect(wrapper.findComponent({ name: 'PermissionEditor' }).props('showPermissions')).toBe(true)
 	})
 
 	it('toggles a single permission in custom mode', async () => {
 		const { wrapper, share } = mountPanel(schema({ permission_preset: null }))
-		const toggles = wrapper.findAllComponents({ name: 'NcFormBoxSwitch' })
-		// perm-write is the second, currently disabled → enable it
-		toggles[1].vm.$emit('update:modelValue', true)
+		const editor = wrapper.findComponent({ name: 'PermissionEditor' })
+		const write = editor.props('permissions').find((p: { class: string }) => p.class === PERM_WRITE)
+		editor.vm.$emit('permissionToggle', write, true)
 		await flushPromises()
 		expect(share.setPermission).toHaveBeenCalledWith(PERM_WRITE, true)
+	})
+})
+
+describe('SharePanel tab bar', () => {
+	const recipient = {
+		class: RECIPIENT_TYPE_USER,
+		value: 'bob',
+		instance: null,
+		display_name: 'Bob',
+		icon: null,
+		secret: { updatable: false },
+		initiator: null,
+		permissions: [],
+	}
+
+	it('shows the share-type tabs while the share is a draft', () => {
+		expect(mountPanel().wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+		const withRecipient = mountPanel(schema({ recipients: [recipient] }))
+		expect(withRecipient.wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+	})
+
+	it('hides the share-type tabs once the share has been sent', () => {
+		const { wrapper } = mountPanel(schema({ state: 'active' }))
+		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(false)
+	})
+
+	it('confirms and drops invited people when switching to the link tab', async () => {
+		const { wrapper, share } = mountPanel(schema({ recipients: [recipient] }))
+		wrapper.findComponent({ name: 'NcRadioGroup' }).vm.$emit('update:modelValue', ShareDialogTab.Anyone)
+		await flushPromises()
+		expect(share.removeRecipient).toHaveBeenCalledWith(RECIPIENT_TYPE_USER, 'bob', undefined)
+	})
+})
+
+describe('SharePanel destructive actions', () => {
+	const recipient = {
+		class: RECIPIENT_TYPE_USER,
+		value: 'bob',
+		instance: null,
+		display_name: 'Bob',
+		icon: null,
+		secret: { updatable: false },
+		initiator: null,
+		permissions: [],
+	}
+
+	it('keeps the invited people and the tab when the confirmation is declined', async () => {
+		confirmation.declined = true
+		const { wrapper, share } = mountPanel(schema({ recipients: [recipient] }))
+		wrapper.findComponent({ name: 'NcRadioGroup' }).vm.$emit('update:modelValue', ShareDialogTab.Anyone)
+		await flushPromises()
+		expect(share.removeRecipient).not.toHaveBeenCalled()
+		expect(wrapper.emitted('update:shareDialogTab')).toBeUndefined()
+	})
+
+	it('deletes the share once confirmed', async () => {
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(share.delete).toHaveBeenCalledOnce()
+		expect(wrapper.emitted('deleted')).toHaveLength(1)
+	})
+
+	it('does not delete the share when the confirmation is declined', async () => {
+		confirmation.declined = true
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(share.delete).not.toHaveBeenCalled()
+		expect(wrapper.emitted('deleted')).toBeUndefined()
+	})
+
+	it('does not report the share as deleted when the deletion fails', async () => {
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		share.delete.mockRejectedValueOnce(new Error('nope'))
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(wrapper.emitted('deleted')).toBeUndefined()
 	})
 })
 

@@ -62,7 +62,8 @@
 				:folderName="folderName"
 				@settingsWarning="settingsHasWarning = $event"
 				@settingsAvailable="settingsAvailable = $event"
-				@submitted="onSubmitted" />
+				@submitted="onSubmitted"
+				@deleted="emit('close')" />
 		</template>
 
 		<!-- Settings toggle -->
@@ -98,7 +99,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import ShareConfirmation from './components/ShareConfirmation.vue'
 import SharePanel from './components/SharePanel.vue'
 import { createShare } from './api/share.ts'
-import { SOURCE_TYPE_NODE } from './constants.ts'
+import { RECIPIENT_TYPE_TOKEN, SOURCE_TYPE_NODE } from './constants.ts'
 import { ShareDialogTab } from './types/ui.ts'
 import { t } from './utils/l10n.ts'
 import { logger } from './utils/logger.ts'
@@ -138,7 +139,11 @@ const dialogTitle = computed(() => {
 		: t('Share')
 })
 
-const shareDialogTab = ref<ShareDialogTab>(ShareDialogTab.InvitedPeople)
+// Open an existing share on the view matching its type. Getting this wrong is
+// destructive: the link view syncs the token recipient, so opening a link share
+// on the invited view would strip its link.
+const isExistingLinkShare = props.share?.recipients.some((recipient) => recipient.class === RECIPIENT_TYPE_TOKEN) ?? false
+const shareDialogTab = ref<ShareDialogTab>(isExistingLinkShare ? ShareDialogTab.Anyone : ShareDialogTab.InvitedPeople)
 const settingsHasWarning = ref(false)
 const settingsAvailable = ref(false)
 
@@ -207,6 +212,9 @@ onMounted(async () => {
 	// flex is used so the dialog still sizes to its content when it is short.
 	:deep(.share-panel) {
 		max-height: 50vh;
+		// Keep a stable floor so the dialog does not jump around as the content
+		// changes (switching tabs, adding recipients, revealing toggles).
+		min-height: min(320px, 50vh);
 		overflow-y: auto;
 		// Match the dialog's inline padding at the bottom (its content has none),
 		// so the form does not sit flush against the edge.

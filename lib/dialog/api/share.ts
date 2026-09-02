@@ -184,6 +184,20 @@ class Share {
 	}
 
 	/**
+	 * Enable or disable a single permission for one recipient. The backend caps
+	 * the recipient at the share-level permissions (the maximum).
+	 *
+	 * @param recipientClass The recipient type class
+	 * @param recipientValue The recipient value
+	 * @param permissionClass The permission type class
+	 * @param enabled The new enabled state
+	 * @param instance The recipient's instance (federated shares)
+	 */
+	async setRecipientPermission(recipientClass: string, recipientValue: string, permissionClass: string, enabled: boolean, instance?: string): Promise<this> {
+		return this.#sync(await client.updateShareRecipientPermission(this.id, recipientClass, recipientValue, permissionClass, enabled, instance))
+	}
+
+	/**
 	 * Set the share state (draft → active → deleted).
 	 *
 	 * @param state The new state

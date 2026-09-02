@@ -22,6 +22,7 @@ vi.mock('./sharing.ts', () => ({
 	updateShareProperty: vi.fn(),
 	updateSharePermission: vi.fn(),
 	selectSharePermissionPreset: vi.fn(),
+	updateShareRecipientPermission: vi.fn(),
 	updateShareState: vi.fn(),
 	searchRecipients: vi.fn(),
 	deleteShare: vi.fn(),
@@ -117,6 +118,13 @@ describe('Share', () => {
 		mocked.updateSharePermission.mockResolvedValue(share())
 		await instance.setPermission('C', false)
 		expect(mocked.updateSharePermission).toHaveBeenCalledWith('abc', 'C', false)
+	})
+
+	it('setRecipientPermission forwards recipient identity, permission and flag', async () => {
+		const instance = await makeShare()
+		mocked.updateShareRecipientPermission.mockResolvedValue(share())
+		await instance.setRecipientPermission('R', 'bob', 'C', true, 'inst')
+		expect(mocked.updateShareRecipientPermission).toHaveBeenCalledWith('abc', 'R', 'bob', 'C', true, 'inst')
 	})
 
 	it('addSource forwards the class and value', async () => {

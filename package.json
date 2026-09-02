@@ -47,6 +47,7 @@
     "lint:fix": "eslint --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:ct": "playwright test -c playwright-ct.config.ts",
     "test:watch": "vitest run --watch",
     "ts:check": "vue-tsc --noEmit",
     "watch": "vite --mode development build --watch"
@@ -70,7 +71,8 @@
     "@nextcloud/files": "^4.0.0",
     "@nextcloud/typings": "^1.10.0",
     "@nextcloud/vite-config": "^2.5.4",
-    "@nextcloud/vue": "^9.10.0",
+    "@nextcloud/vue": "^9.11.0",
+    "@playwright/experimental-ct-vue": "^1.62.1",
     "@types/node": "^26.2.0",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.11",

@@ -38,10 +38,15 @@ export function useLinkShare(share: Share, isLinkShare: Ref<boolean>) {
 	 * Add the token recipient on the link view (so the backend returns the link
 	 * properties), remove it otherwise so its link-only properties don't leak into
 	 * the invited-people view.
+	 *
+	 * @param allowRemoval Whether the token may be removed; false on mount
 	 */
-	async function syncTokenRecipient() {
+	async function syncTokenRecipient(allowRemoval = true) {
 		const needsToken = isLinkShare.value
 		if (needsToken === !!tokenRecipient.value) {
+			return
+		}
+		if (!needsToken && !allowRemoval) {
 			return
 		}
 
@@ -62,7 +67,9 @@ export function useLinkShare(share: Share, isLinkShare: Ref<boolean>) {
 		}
 	}
 
-	watch(isLinkShare, syncTokenRecipient, { immediate: true })
+	// The mount-time sync may only add: an existing link share opened on the
+	// invited view must keep its token, or the public link would be destroyed.
+	watch(isLinkShare, (_value, previous) => syncTokenRecipient(previous !== undefined), { immediate: true })
 
 	/**
 	 * Copy the current share link, activating the draft first if needed so a
@@ -95,7 +102,7 @@ export function useLinkShare(share: Share, isLinkShare: Ref<boolean>) {
 		linkActionsDisabled,
 		resolvedLink,
 		copied,
-		retryTokenRecipient: syncTokenRecipient,
+		retryTokenRecipient: () => syncTokenRecipient(),
 		copyLink,
 	}
 }

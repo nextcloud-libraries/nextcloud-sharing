@@ -7,48 +7,48 @@ import type { NcSelectUsersModel } from '@nextcloud/vue/components/NcSelectUsers
 import type { Share } from '../api/share.ts'
 
 import debounce from 'debounce'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { searchRecipients } from '../api/share.ts'
 import { recipientToNcSelectUsersModel } from '../utils/api.ts'
 import { logger } from '../utils/logger.ts'
 
 /**
- * Manage recipient search and single-recipient selection for a share. Selecting
- * a recipient adds it to the share; clearing/replacing removes the previous one.
+ * Manage recipient search and adding recipients to a share. The search field is
+ * add-only: picking a result adds the recipient to the share and clears the
+ * field. The authoritative list of recipients lives on the share itself and is
+ * rendered separately (with per-recipient permissions).
  *
  * @param share The share being edited
  */
 export function useRecipientSearch(share: Share) {
 	const results = ref<NcSelectUsersModel[]>([])
-	const selectedRecipient = ref<NcSelectUsersModel | undefined>(undefined)
+	// Always-empty model: the field is a picker, selected recipients render below.
+	const selected = ref<NcSelectUsersModel[]>([])
 	const searching = ref(false)
 
-	// Map selected user IDs back to their SharingRecipient class for API calls.
+	// Map result user IDs back to their SharingRecipient class for API calls.
 	const recipientClassMap = new Map<string, string>()
 
-	watch(selectedRecipient, async (newVal, oldVal) => {
-		if (oldVal) {
-			const recipientClass = recipientClassMap.get(oldVal.id)
-			if (recipientClass) {
-				try {
-					await share.removeRecipient(recipientClass, oldVal.id)
-				} catch (e) {
-					logger.error('Failed to remove recipient', { error: e, recipient: oldVal })
-				}
+	/**
+	 * Add the picked recipients to the share, then clear the field.
+	 *
+	 * @param value The current selection from NcSelectUsers (single or array)
+	 */
+	async function onSelect(value: NcSelectUsersModel | NcSelectUsersModel[]) {
+		const models = Array.isArray(value) ? value : [value]
+		for (const model of models) {
+			const recipientClass = recipientClassMap.get(model.id)
+			if (!recipientClass || share.recipients.some((recipient) => recipient.value === model.id)) {
+				continue
+			}
+			try {
+				await share.addRecipient(recipientClass, model.id)
+			} catch (e) {
+				logger.error('Failed to add recipient', { error: e, recipient: model })
 			}
 		}
-
-		if (newVal) {
-			const recipientClass = recipientClassMap.get(newVal.id)
-			if (recipientClass) {
-				try {
-					await share.addRecipient(recipientClass, newVal.id)
-				} catch (e) {
-					logger.error('Failed to add recipient', { error: e, recipient: newVal })
-				}
-			}
-		}
-	})
+		selected.value = []
+	}
 
 	/**
 	 * Search for recipients and cache the results, tracking each result's
@@ -79,8 +79,9 @@ export function useRecipientSearch(share: Share) {
 
 	return {
 		results,
-		selectedRecipient,
+		selected,
 		searching,
+		onSelect,
 		onSearch: debounce(onSearch, 150),
 	}
 }

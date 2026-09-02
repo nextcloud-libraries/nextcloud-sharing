@@ -6,12 +6,14 @@
 	<form class="share-panel" @submit.prevent>
 		<!-- First page view -->
 		<template v-if="!inSettings">
+			<!-- The share type is committed once the share has been sent -->
 			<NcRadioGroup
+				v-if="isDraft"
 				class="share-panel__tab-bar"
 				:modelValue="shareDialogTab"
 				:label="t('Share type')"
 				:hideLabel="true"
-				@update:modelValue="shareDialogTab = ($event as ShareDialogTab)">
+				@update:modelValue="onTabChange($event as ShareDialogTab)">
 				<NcRadioGroupButton
 					v-for="type in shareTypes"
 					:key="type.id"
@@ -23,50 +25,33 @@
 				</NcRadioGroupButton>
 			</NcRadioGroup>
 
-			<NcSelectUsers
-				v-if="shareDialogTab === ShareDialogTab.InvitedPeople"
-				v-model="selectedRecipient"
-				class="share-panel__recipient-search"
-				:multiple="false"
-				:inputLabel="t('Add people')"
-				:options="results"
-				:loading="searching"
-				:placeholder="t('Name, team, email or federated cloud ID')"
-				@search="onSearchDebounced" />
+			<template v-if="shareDialogTab === ShareDialogTab.InvitedPeople">
+				<NcSelectUsers
+					:modelValue="selectedRecipients"
+					class="share-panel__recipient-search"
+					:multiple="true"
+					:inputLabel="t('Add people')"
+					:options="results"
+					:loading="searching"
+					:placeholder="t('Name, team, email or federated cloud ID')"
+					@update:modelValue="onSelectRecipients"
+					@search="onSearchDebounced" />
 
-			<!-- Permissions - core feature -->
-			<NcSelect
-				:modelValue="selectedPresetOption"
-				:clearable="false"
-				:searchable="false"
-				:inputLabel="presetSelectLabel"
-				:options="presetOptions"
-				class="share-panel__permissions-preset-select"
-				:placeholder="t('Can…')"
-				@update:modelValue="onPresetChange" />
+				<!-- Selected recipients with per-recipient permissions -->
+				<RecipientList :share="share" />
+			</template>
 
-			<!-- Fine-grained permission toggles, shown while "Can…" is selected -->
-			<Transition name="expand">
-				<div v-if="showPermissions" class="share-panel__permissions">
-					<div class="share-panel__permissions-inner">
-						<NcFormBox>
-							<NcFormBoxSwitch
-								v-for="permission in permissions"
-								:key="permission.class"
-								:label="permission.display_name"
-								:description="permission.hint ?? undefined"
-								:error="permissionErrors[permission.class]"
-								:modelValue="permission.enabled"
-								@update:modelValue="(enabled) => onPermissionToggle(permission, enabled)" />
-						</NcFormBox>
-					</div>
-				</div>
-			</Transition>
-
-			<!-- Preset-level error (the toggles are hidden while a preset is selected) -->
-			<NcNoteCard v-if="presetError" type="error">
-				{{ presetError }}
-			</NcNoteCard>
+			<!-- Permissions: default/max for the share (reused per-recipient) -->
+			<PermissionEditor
+				:presetOptions="presetOptions"
+				:selectedPreset="selectedPresetOption"
+				:showPermissions="showPermissions"
+				:permissions="permissions"
+				:permissionErrors="permissionErrors"
+				:presetError="presetError"
+				:presetLabel="presetSelectLabel"
+				@presetChange="onPresetChange"
+				@permissionToggle="onPermissionToggle" />
 
 			<!-- First-page properties (e.g. Note to recipients) -->
 			<template v-for="property in firstPageProperties" :key="property.class">
@@ -175,6 +160,21 @@
 					:property="property"
 					:share="share" />
 			</template>
+
+			<!-- Deleting the share is destructive, so it lives on its own -->
+			<div class="share-panel__settings-actions">
+				<NcButton
+					class="share-panel__delete"
+					variant="error"
+					:disabled="deleting"
+					@click="confirmDelete">
+					<template #icon>
+						<NcLoadingIcon v-if="deleting" :size="20" />
+						<NcIconSvgWrapper v-else :svg="IconDelete" :size="20" />
+					</template>
+					{{ t('Delete share') }}
+				</NcButton>
+			</div>
 		</template>
 	</form>
 </template>
@@ -184,29 +184,30 @@ import type { Share } from '../api/share.ts'
 
 import AccountPlusOutlineIconSvg from '@mdi/svg/svg/account-plus-outline.svg?raw'
 import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
+import IconDelete from '@mdi/svg/svg/delete.svg?raw'
 import IconSend from '@mdi/svg/svg/send-outline.svg?raw'
 import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
+import { DialogBuilder } from '@nextcloud/dialogs'
 import { computed, ref, watch } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
-import NcFormBox from '@nextcloud/vue/components/NcFormBox'
-import NcFormBoxSwitch from '@nextcloud/vue/components/NcFormBoxSwitch'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcRadioGroup from '@nextcloud/vue/components/NcRadioGroup'
 import NcRadioGroupButton from '@nextcloud/vue/components/NcRadioGroupButton'
-import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcSelectUsers from '@nextcloud/vue/components/NcSelectUsers'
 import InlineToggleField from './InlineToggleField.vue'
+import PermissionEditor from './PermissionEditor.vue'
 import PropertyField from './PropertyField.vue'
+import RecipientList from './RecipientList.vue'
 import { useLinkShare } from '../composables/useLinkShare.ts'
 import { usePermissionPresets } from '../composables/usePermissionPresets.ts'
 import { useRecipientSearch } from '../composables/useRecipientSearch.ts'
 import { useShareProperties } from '../composables/useShareProperties.ts'
-import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD } from '../constants.ts'
+import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 import { getOcsErrorMessage } from '../utils/api.ts'
-import { t } from '../utils/l10n.ts'
+import { n, t } from '../utils/l10n.ts'
 import { logger } from '../utils/logger.ts'
 import { isLongTextProperty, isOptionalProperty } from '../utils/property.ts'
 import { shareOutcomeSummary } from '../utils/summary.ts'
@@ -227,12 +228,81 @@ const emit = defineEmits<{
 	(e: 'settingsWarning', value: boolean): void
 	(e: 'settingsAvailable', value: boolean): void
 	(e: 'submitted', value: { link: string | null, isPublic: boolean }): void
+	(e: 'deleted'): void
 }>()
 
 const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyone)
 
 // A share cannot be submitted without at least one recipient.
 const canSubmit = computed(() => props.share.recipients.length > 0)
+
+// The share type can only be changed before the share is sent.
+const isDraft = computed(() => props.share.state === 'draft')
+
+// Invited people: every recipient except the link (token) one.
+const invitedRecipients = computed(() => props.share.recipients.filter((recipient) => recipient.class !== RECIPIENT_TYPE_TOKEN))
+
+/**
+ * Ask before dropping the invited people when switching to a public link.
+ *
+ * @param count Number of invited people that would be removed
+ */
+async function confirmDropInvited(count: number): Promise<boolean> {
+	let confirmed = false
+	const dialog = (new DialogBuilder())
+		.setName(t('Share with anyone'))
+		.setText(n(
+			'Switching to a public link removes %n invited person from this share.',
+			'Switching to a public link removes %n invited people from this share.',
+			count,
+		))
+		.setButtons([
+			{
+				label: t('Cancel'),
+				variant: 'secondary',
+				callback: () => {},
+			},
+			{
+				label: t('Continue'),
+				variant: 'primary',
+				callback: () => {
+					confirmed = true
+				},
+			},
+		])
+		.build()
+	try {
+		await dialog.show()
+	} catch (e) {
+		logger.debug('Share type confirmation dialog closed', { error: e })
+	}
+	return confirmed
+}
+
+/**
+ * Switch the share type. A public link cannot keep invited people, so confirm
+ * and remove them first.
+ *
+ * @param tab The tab to switch to
+ */
+async function onTabChange(tab: ShareDialogTab) {
+	if (tab === shareDialogTab.value) {
+		return
+	}
+	if (tab === ShareDialogTab.Anyone && invitedRecipients.value.length > 0) {
+		if (!await confirmDropInvited(invitedRecipients.value.length)) {
+			return
+		}
+		for (const recipient of invitedRecipients.value) {
+			try {
+				await props.share.removeRecipient(recipient.class, recipient.value, recipient.instance ?? undefined)
+			} catch (e) {
+				logger.error('Failed to remove recipient while switching to a link share', { error: e, recipient: recipient.value })
+			}
+		}
+	}
+	shareDialogTab.value = tab
+}
 
 // Editable properties, permissions/presets, recipient search and link handling
 // live in dedicated composables; this component wires them to the template.
@@ -256,7 +326,7 @@ const {
 	onPermissionToggle,
 } = usePermissionPresets(props.share)
 
-const { results, selectedRecipient, searching, onSearch: onSearchDebounced } = useRecipientSearch(props.share)
+const { results, selected: selectedRecipients, searching, onSelect: onSelectRecipients, onSearch: onSearchDebounced } = useRecipientSearch(props.share)
 
 const {
 	linkRecipientLoading,
@@ -294,7 +364,7 @@ const folderUploadHint = computed<string | null>(() => isLinkShare.value && prop
 	: null)
 
 const copyLinkLabel = computed(() => isLinkShare.value ? t('Copy public link') : t('Copy private link'))
-const presetSelectLabel = computed(() => isLinkShare.value ? t('Anyone with the link') : t('Participants'))
+const presetSelectLabel = computed(() => isLinkShare.value ? t('Anyone with the link') : t('Default permission'))
 
 const shareTypes = [
 	{ id: ShareDialogTab.InvitedPeople, label: t('Invited people'), iconSvgInline: AccountPlusOutlineIconSvg },
@@ -308,6 +378,52 @@ const submitError = ref<string | null>(null)
 watch(shareDialogTab, () => {
 	submitError.value = null
 })
+
+const deleting = ref(false)
+
+/**
+ * Ask for confirmation, then delete the share for good.
+ */
+async function confirmDelete() {
+	let confirmed = false
+	const dialog = (new DialogBuilder())
+		.setName(t('Delete share'))
+		.setText(t('This share will be deleted for good. This cannot be undone.'))
+		.setButtons([
+			{
+				label: t('Cancel'),
+				variant: 'secondary',
+				callback: () => {},
+			},
+			{
+				label: t('Delete share'),
+				variant: 'error',
+				callback: () => {
+					confirmed = true
+				},
+			},
+		])
+		.build()
+	try {
+		await dialog.show()
+	} catch (e) {
+		logger.debug('Delete confirmation dialog closed', { error: e })
+	}
+	if (!confirmed) {
+		return
+	}
+
+	deleting.value = true
+	try {
+		await props.share.delete()
+		emit('deleted')
+	} catch (e) {
+		logger.error('Failed to delete share', { error: e })
+		submitError.value = getOcsErrorMessage(e)
+	} finally {
+		deleting.value = false
+	}
+}
 
 /**
  * Submit the share: activate the draft (which validates it and notifies mail
@@ -340,34 +456,28 @@ form.share-panel {
 	// letting flex shrink (compress) them to fit the max-height.
 	> * {
 		flex-shrink: 0;
+		min-width: 0;
 	}
 }
 
-// Animate the permission list open/closed via the grid-rows 0fr→1fr trick.
-.share-panel__permissions {
-	display: grid;
-	grid-template-rows: 1fr;
+.share-panel__link-actions,
+.share-panel__settings-actions {
+	// Keep the actions in reach while the form scrolls. The opaque background and
+	// the top border stop the scrolled content from bleeding into the bar.
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	background-color: var(--color-main-background);
+	border-block-start: 1px solid var(--color-border);
+	padding-block: calc(var(--default-grid-baseline) * 3);
+	// Cancel the form's bottom padding so the bar sits flush at the bottom.
+	margin-block-end: calc(var(--default-grid-baseline) * -3);
 }
 
-.share-panel__permissions-inner {
-	overflow: hidden;
-}
-
-.expand-enter-active,
-.expand-leave-active {
-	transition: grid-template-rows 0.2s ease-in-out;
-}
-
-.expand-enter-from,
-.expand-leave-to {
-	grid-template-rows: 0fr;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.expand-enter-active,
-	.expand-leave-active {
-		transition: none;
-	}
+// The delete action is secondary: keep it compact and to the end.
+.share-panel__settings-actions {
+	display: flex;
+	justify-content: flex-end;
 }
 
 .share-panel__link-actions {
