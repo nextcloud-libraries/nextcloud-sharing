@@ -166,7 +166,6 @@
 				<NcButton
 					class="share-panel__delete"
 					variant="error"
-					wide
 					:disabled="deleting"
 					@click="confirmDelete">
 					<template #icon>
@@ -463,12 +462,22 @@ form.share-panel {
 
 .share-panel__link-actions,
 .share-panel__settings-actions {
-	// Keep the actions in reach while the form scrolls.
+	// Keep the actions in reach while the form scrolls. The opaque background and
+	// the top border stop the scrolled content from bleeding into the bar.
 	position: sticky;
 	bottom: 0;
-	z-index: 1;
+	z-index: 2;
 	background-color: var(--color-main-background);
-	padding-block: calc(var(--default-grid-baseline) * 2);
+	border-block-start: 1px solid var(--color-border);
+	padding-block: calc(var(--default-grid-baseline) * 3);
+	// Cancel the form's bottom padding so the bar sits flush at the bottom.
+	margin-block-end: calc(var(--default-grid-baseline) * -3);
+}
+
+// The delete action is secondary: keep it compact and to the end.
+.share-panel__settings-actions {
+	display: flex;
+	justify-content: flex-end;
 }
 
 .share-panel__link-actions {

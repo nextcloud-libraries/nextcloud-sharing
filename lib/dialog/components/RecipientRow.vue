@@ -31,7 +31,7 @@
 			</NcActionButton>
 			<NcActionButton @click="modalOpen = true">
 				<template #icon>
-					<NcIconSvgWrapper :svg="isCustom ? IconCheck : IconTune" :size="20" />
+					<NcIconSvgWrapper v-if="isCustom" :svg="IconCheck" :size="20" />
 				</template>
 				{{ t('Custom permissions') }}
 			</NcActionButton>
@@ -72,7 +72,6 @@ import type { SharingRecipient } from '../types/api.ts'
 
 import IconCheck from '@mdi/svg/svg/check.svg?raw'
 import IconDelete from '@mdi/svg/svg/delete.svg?raw'
-import IconTune from '@mdi/svg/svg/tune-variant.svg?raw'
 import { computed, ref } from 'vue'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
 import NcActionCaption from '@nextcloud/vue/components/NcActionCaption'

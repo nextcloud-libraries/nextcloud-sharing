@@ -17,12 +17,12 @@
 			:hideLabel="hideLabel"
 			:options="presetOptions"
 			class="permission-editor__preset"
-			:placeholder="t('Can…')"
+			:placeholder="t('Custom permissions')"
 			@update:modelValue="(option) => emit('presetChange', option)" />
 
-		<!-- Fine-grained toggles, shown while "Can…" (custom) is selected -->
+		<!-- Fine-grained toggles, shown while the custom entry is selected -->
 		<Transition name="expand">
-			<div v-if="showPermissions" class="permission-editor__permissions">
+			<div v-if="showPermissions" ref="permissionsEl" class="permission-editor__permissions">
 				<div class="permission-editor__permissions-inner">
 					<NcFormBox>
 						<NcFormBoxSwitch
@@ -49,6 +49,7 @@
 import type { PresetOption } from '../composables/useRecipientPermissions.ts'
 import type { SharingPermission } from '../types/api.ts'
 
+import { nextTick, ref, watch } from 'vue'
 import NcFormBox from '@nextcloud/vue/components/NcFormBox'
 import NcFormBoxSwitch from '@nextcloud/vue/components/NcFormBoxSwitch'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
@@ -58,7 +59,7 @@ import { t } from '../utils/l10n.ts'
 /** A permission toggle; `available === false` disables it (over the cap). */
 export type EditablePermission = SharingPermission & { available?: boolean }
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
 	/** Preset dropdown options */
 	presetOptions: PresetOption[]
 	/** The currently selected preset option */
@@ -89,6 +90,17 @@ const emit = defineEmits<{
 	(e: 'presetChange', option: PresetOption | null): void
 	(e: 'permissionToggle', permission: SharingPermission, enabled: boolean): void
 }>()
+
+const permissionsEl = ref<HTMLElement | null>(null)
+
+// Reveal the toggles once they appear, they are below the fold in the dialog.
+watch(() => props.showPermissions, async (shown) => {
+	if (!shown) {
+		return
+	}
+	await nextTick()
+	permissionsEl.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+})
 </script>
 
 <style scoped lang="scss">

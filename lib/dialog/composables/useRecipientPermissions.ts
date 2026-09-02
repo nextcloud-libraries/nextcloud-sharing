@@ -38,7 +38,7 @@ export interface RecipientPermission extends SharingPermission {
  */
 export function useRecipientPermissions(share: Share, getRecipient: () => SharingRecipient) {
 	const capabilityPresets: SharingPermissionPreset[] = (getCapabilities() as Partial<SharingCapabilities>).sharing?.permission_presets ?? []
-	const customOption: PresetOption = { value: CUSTOM_VALUE, label: t('Can…') }
+	const customOption: PresetOption = { value: CUSTOM_VALUE, label: t('Custom permissions') }
 
 	const permissionErrors = reactive<Record<string, string>>({})
 	const presetError = ref<string | null>(null)
@@ -56,7 +56,14 @@ export function useRecipientPermissions(share: Share, getRecipient: () => Sharin
 			return members.length > 0 && members.every((permission) => max.has(permission.class))
 		})
 		return [
-			...available.map((preset) => ({ value: preset.class, label: preset.display_name })),
+			...available.map((preset) => ({
+				value: preset.class,
+				// Flag the share's own preset so it is obvious which recipients
+				// still follow the default and which were changed by hand.
+				label: preset.class === share.permissionPreset
+					? t('{preset} (default)', { preset: preset.display_name })
+					: preset.display_name,
+			})),
 			customOption,
 		]
 	})

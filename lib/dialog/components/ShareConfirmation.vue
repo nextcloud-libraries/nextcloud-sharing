@@ -122,7 +122,8 @@ async function copyLink() {
 	}
 
 	&__icon {
-		color: var(--color-success);
+		// Readable on both light and dark backgrounds.
+		color: var(--color-success-text, var(--color-success));
 	}
 
 	&__link-input {
@@ -137,7 +138,7 @@ async function copyLink() {
 	}
 
 	&__done {
-		align-self: stretch;
+		align-self: flex-end;
 	}
 }
 </style>
