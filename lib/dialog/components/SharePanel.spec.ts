@@ -35,7 +35,10 @@ vi.mock('../api/share.ts', () => ({
 	searchRecipients: vi.fn().mockResolvedValue([]),
 }))
 
-// Confirm dialog: always answer with the last button ("Continue").
+// Confirm dialog: answers with the last button (the destructive one) by default;
+// set `confirmation.declined` to answer with the first one ("Cancel") instead.
+const confirmation = vi.hoisted(() => ({ declined: false }))
+
 vi.mock('@nextcloud/dialogs', () => ({
 	DialogBuilder: class {
 		buttons: { callback: () => void }[] = []
@@ -55,7 +58,7 @@ vi.mock('@nextcloud/dialogs', () => ({
 		build() {
 			const { buttons } = this
 			return {
-				show: async () => buttons.at(-1)?.callback(),
+				show: async () => (confirmation.declined ? buttons.at(0) : buttons.at(-1))?.callback(),
 			}
 		}
 	},
@@ -90,6 +93,7 @@ interface FakeShare {
 	addRecipient: ReturnType<typeof vi.fn>
 	removeRecipient: ReturnType<typeof vi.fn>
 	activate: ReturnType<typeof vi.fn>
+	delete: ReturnType<typeof vi.fn>
 }
 
 /**
@@ -113,6 +117,7 @@ function fakeShare(data: SharingShare): Share & FakeShare {
 		addRecipient: vi.fn().mockResolvedValue(undefined),
 		removeRecipient: vi.fn().mockResolvedValue(undefined),
 		activate: vi.fn().mockResolvedValue(undefined),
+		delete: vi.fn().mockResolvedValue(undefined),
 	} as unknown as Share & FakeShare
 }
 
@@ -139,6 +144,7 @@ function mountPanel(data: SharingShare = schema(), props: Record<string, unknown
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	confirmation.declined = false
 })
 
 describe('SharePanel presets and permissions', () => {
@@ -196,6 +202,53 @@ describe('SharePanel tab bar', () => {
 		wrapper.findComponent({ name: 'NcRadioGroup' }).vm.$emit('update:modelValue', ShareDialogTab.Anyone)
 		await flushPromises()
 		expect(share.removeRecipient).toHaveBeenCalledWith(RECIPIENT_TYPE_USER, 'bob', undefined)
+	})
+})
+
+describe('SharePanel destructive actions', () => {
+	const recipient = {
+		class: RECIPIENT_TYPE_USER,
+		value: 'bob',
+		instance: null,
+		display_name: 'Bob',
+		icon: null,
+		secret: { updatable: false },
+		initiator: null,
+		permissions: [],
+	}
+
+	it('keeps the invited people and the tab when the confirmation is declined', async () => {
+		confirmation.declined = true
+		const { wrapper, share } = mountPanel(schema({ recipients: [recipient] }))
+		wrapper.findComponent({ name: 'NcRadioGroup' }).vm.$emit('update:modelValue', ShareDialogTab.Anyone)
+		await flushPromises()
+		expect(share.removeRecipient).not.toHaveBeenCalled()
+		expect(wrapper.emitted('update:shareDialogTab')).toBeUndefined()
+	})
+
+	it('deletes the share once confirmed', async () => {
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(share.delete).toHaveBeenCalledOnce()
+		expect(wrapper.emitted('deleted')).toHaveLength(1)
+	})
+
+	it('does not delete the share when the confirmation is declined', async () => {
+		confirmation.declined = true
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(share.delete).not.toHaveBeenCalled()
+		expect(wrapper.emitted('deleted')).toBeUndefined()
+	})
+
+	it('does not report the share as deleted when the deletion fails', async () => {
+		const { wrapper, share } = mountPanel(schema({ state: 'active' }), { inSettings: true })
+		share.delete.mockRejectedValueOnce(new Error('nope'))
+		wrapper.findComponent('.share-panel__delete').vm.$emit('click')
+		await flushPromises()
+		expect(wrapper.emitted('deleted')).toBeUndefined()
 	})
 })
 
