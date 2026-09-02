@@ -392,10 +392,6 @@ form.share-panel {
 	}
 }
 
-.share-panel__recipient-search {
-	width: 100%;
-}
-
 .share-panel__link-actions {
 	display: flex;
 	gap: calc(var(--default-grid-baseline) * 3);
