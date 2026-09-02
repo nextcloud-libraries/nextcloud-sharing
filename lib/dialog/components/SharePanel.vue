@@ -6,14 +6,12 @@
 	<form class="share-panel" @submit.prevent>
 		<!-- First page view -->
 		<template v-if="!inSettings">
-			<!-- Share type is committed once a recipient (or the link) exists -->
 			<NcRadioGroup
-				v-if="!hasRecipients"
 				class="share-panel__tab-bar"
 				:modelValue="shareDialogTab"
 				:label="t('Share type')"
 				:hideLabel="true"
-				@update:modelValue="shareDialogTab = ($event as ShareDialogTab)">
+				@update:modelValue="onTabChange($event as ShareDialogTab)">
 				<NcRadioGroupButton
 					v-for="type in shareTypes"
 					:key="type.id"
@@ -171,6 +169,7 @@ import AccountPlusOutlineIconSvg from '@mdi/svg/svg/account-plus-outline.svg?raw
 import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
 import IconSend from '@mdi/svg/svg/send-outline.svg?raw'
 import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
+import { DialogBuilder } from '@nextcloud/dialogs'
 import { computed, ref, watch } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
@@ -187,10 +186,10 @@ import { useLinkShare } from '../composables/useLinkShare.ts'
 import { usePermissionPresets } from '../composables/usePermissionPresets.ts'
 import { useRecipientSearch } from '../composables/useRecipientSearch.ts'
 import { useShareProperties } from '../composables/useShareProperties.ts'
-import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD } from '../constants.ts'
+import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 import { getOcsErrorMessage } from '../utils/api.ts'
-import { t } from '../utils/l10n.ts'
+import { n, t } from '../utils/l10n.ts'
 import { logger } from '../utils/logger.ts'
 import { isLongTextProperty, isOptionalProperty } from '../utils/property.ts'
 import { shareOutcomeSummary } from '../utils/summary.ts'
@@ -218,8 +217,70 @@ const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyon
 // A share cannot be submitted without at least one recipient.
 const canSubmit = computed(() => props.share.recipients.length > 0)
 
-// Once a recipient (or the link) exists, the share type is committed.
-const hasRecipients = computed(() => props.share.recipients.length > 0)
+// Invited people: every recipient except the link (token) one.
+const invitedRecipients = computed(() => props.share.recipients.filter((recipient) => recipient.class !== RECIPIENT_TYPE_TOKEN))
+
+/**
+ * Ask before dropping the invited people when switching to a public link.
+ *
+ * @param count Number of invited people that would be removed
+ */
+async function confirmDropInvited(count: number): Promise<boolean> {
+	let confirmed = false
+	const dialog = (new DialogBuilder())
+		.setName(t('Share with anyone'))
+		.setText(n(
+			'Switching to a public link removes %n invited person from this share.',
+			'Switching to a public link removes %n invited people from this share.',
+			count,
+		))
+		.setButtons([
+			{
+				label: t('Cancel'),
+				variant: 'secondary',
+				callback: () => {},
+			},
+			{
+				label: t('Continue'),
+				variant: 'primary',
+				callback: () => {
+					confirmed = true
+				},
+			},
+		])
+		.build()
+	try {
+		await dialog.show()
+	} catch (e) {
+		logger.debug('Share type confirmation dialog closed', { error: e })
+	}
+	return confirmed
+}
+
+/**
+ * Switch the share type. A public link cannot keep invited people, so confirm
+ * and remove them first.
+ *
+ * @param tab The tab to switch to
+ */
+async function onTabChange(tab: ShareDialogTab) {
+	if (tab === shareDialogTab.value) {
+		return
+	}
+	if (tab === ShareDialogTab.Anyone && invitedRecipients.value.length > 0) {
+		if (!await confirmDropInvited(invitedRecipients.value.length)) {
+			return
+		}
+		for (const recipient of invitedRecipients.value) {
+			try {
+				await props.share.removeRecipient(recipient.class, recipient.value, recipient.instance ?? undefined)
+			} catch (e) {
+				logger.error('Failed to remove recipient while switching to a link share', { error: e, recipient: recipient.value })
+			}
+		}
+	}
+	shareDialogTab.value = tab
+}
 
 // Editable properties, permissions/presets, recipient search and link handling
 // live in dedicated composables; this component wires them to the template.

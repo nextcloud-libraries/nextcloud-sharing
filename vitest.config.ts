@@ -19,7 +19,9 @@ export default defineConfig({
 		// @nextcloud/vue ships ESM + CSS that must be transformed by Vite in tests.
 		server: {
 			deps: {
-				inline: [/@nextcloud\/vue/],
+				// @nextcloud/dialogs pulls @nextcloud/vue components (and their CSS),
+				// both must be transformed by Vite in tests.
+				inline: [/@nextcloud\/vue/, /@nextcloud\/dialogs/],
 			},
 		},
 		coverage: {

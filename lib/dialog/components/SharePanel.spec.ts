@@ -35,6 +35,32 @@ vi.mock('../api/share.ts', () => ({
 	searchRecipients: vi.fn().mockResolvedValue([]),
 }))
 
+// Confirm dialog: always answer with the last button ("Continue").
+vi.mock('@nextcloud/dialogs', () => ({
+	DialogBuilder: class {
+		buttons: { callback: () => void }[] = []
+		setName() {
+			return this
+		}
+
+		setText() {
+			return this
+		}
+
+		setButtons(buttons: { callback: () => void }[]) {
+			this.buttons = buttons
+			return this
+		}
+
+		build() {
+			const { buttons } = this
+			return {
+				show: async () => buttons.at(-1)?.callback(),
+			}
+		}
+	},
+}))
+
 /**
  * Build a share schema.
  *
@@ -156,14 +182,17 @@ describe('SharePanel tab bar', () => {
 		permissions: [],
 	}
 
-	it('shows the share-type tabs when there are no recipients', () => {
-		const { wrapper } = mountPanel()
-		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+	it('always shows the share-type tabs', () => {
+		expect(mountPanel().wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+		const withRecipient = mountPanel(schema({ recipients: [recipient] }))
+		expect(withRecipient.wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
 	})
 
-	it('hides the share-type tabs once a recipient exists', () => {
-		const { wrapper } = mountPanel(schema({ recipients: [recipient] }))
-		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(false)
+	it('confirms and drops invited people when switching to the link tab', async () => {
+		const { wrapper, share } = mountPanel(schema({ recipients: [recipient] }))
+		wrapper.findComponent({ name: 'NcRadioGroup' }).vm.$emit('update:modelValue', ShareDialogTab.Anyone)
+		await flushPromises()
+		expect(share.removeRecipient).toHaveBeenCalledWith(RECIPIENT_TYPE_USER, 'bob', undefined)
 	})
 })
 
