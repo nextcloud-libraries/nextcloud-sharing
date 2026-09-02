@@ -160,6 +160,22 @@
 					:property="property"
 					:share="share" />
 			</template>
+
+			<!-- Deleting the share is destructive, so it lives on its own -->
+			<div class="share-panel__settings-actions">
+				<NcButton
+					class="share-panel__delete"
+					variant="error"
+					wide
+					:disabled="deleting"
+					@click="confirmDelete">
+					<template #icon>
+						<NcLoadingIcon v-if="deleting" :size="20" />
+						<NcIconSvgWrapper v-else :svg="IconDelete" :size="20" />
+					</template>
+					{{ t('Delete share') }}
+				</NcButton>
+			</div>
 		</template>
 	</form>
 </template>
@@ -169,6 +185,7 @@ import type { Share } from '../api/share.ts'
 
 import AccountPlusOutlineIconSvg from '@mdi/svg/svg/account-plus-outline.svg?raw'
 import IconContentCopy from '@mdi/svg/svg/content-copy.svg?raw'
+import IconDelete from '@mdi/svg/svg/delete.svg?raw'
 import IconSend from '@mdi/svg/svg/send-outline.svg?raw'
 import WorldMapOutlineSvg from '@mdi/svg/svg/web.svg?raw'
 import { DialogBuilder } from '@nextcloud/dialogs'
@@ -212,6 +229,7 @@ const emit = defineEmits<{
 	(e: 'settingsWarning', value: boolean): void
 	(e: 'settingsAvailable', value: boolean): void
 	(e: 'submitted', value: { link: string | null, isPublic: boolean }): void
+	(e: 'deleted'): void
 }>()
 
 const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyone)
@@ -362,6 +380,52 @@ watch(shareDialogTab, () => {
 	submitError.value = null
 })
 
+const deleting = ref(false)
+
+/**
+ * Ask for confirmation, then delete the share for good.
+ */
+async function confirmDelete() {
+	let confirmed = false
+	const dialog = (new DialogBuilder())
+		.setName(t('Delete share'))
+		.setText(t('This share will be deleted for good. This cannot be undone.'))
+		.setButtons([
+			{
+				label: t('Cancel'),
+				variant: 'secondary',
+				callback: () => {},
+			},
+			{
+				label: t('Delete share'),
+				variant: 'error',
+				callback: () => {
+					confirmed = true
+				},
+			},
+		])
+		.build()
+	try {
+		await dialog.show()
+	} catch (e) {
+		logger.debug('Delete confirmation dialog closed', { error: e })
+	}
+	if (!confirmed) {
+		return
+	}
+
+	deleting.value = true
+	try {
+		await props.share.delete()
+		emit('deleted')
+	} catch (e) {
+		logger.error('Failed to delete share', { error: e })
+		submitError.value = getOcsErrorMessage(e)
+	} finally {
+		deleting.value = false
+	}
+}
+
 /**
  * Submit the share: activate the draft (which validates it and notifies mail
  * recipients), then hand off to the confirmation view.
@@ -395,6 +459,16 @@ form.share-panel {
 		flex-shrink: 0;
 		min-width: 0;
 	}
+}
+
+.share-panel__link-actions,
+.share-panel__settings-actions {
+	// Keep the actions in reach while the form scrolls.
+	position: sticky;
+	bottom: 0;
+	z-index: 1;
+	background-color: var(--color-main-background);
+	padding-block: calc(var(--default-grid-baseline) * 2);
 }
 
 .share-panel__link-actions {

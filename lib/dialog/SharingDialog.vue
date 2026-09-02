@@ -62,7 +62,8 @@
 				:folderName="folderName"
 				@settingsWarning="settingsHasWarning = $event"
 				@settingsAvailable="settingsAvailable = $event"
-				@submitted="onSubmitted" />
+				@submitted="onSubmitted"
+				@deleted="emit('close')" />
 		</template>
 
 		<!-- Settings toggle -->
@@ -207,6 +208,9 @@ onMounted(async () => {
 	// flex is used so the dialog still sizes to its content when it is short.
 	:deep(.share-panel) {
 		max-height: 50vh;
+		// Keep a stable floor so the dialog does not jump around as the content
+		// changes (switching tabs, adding recipients, revealing toggles).
+		min-height: min(320px, 50vh);
 		overflow-y: auto;
 		// Match the dialog's inline padding at the bottom (its content has none),
 		// so the form does not sit flush against the edge.
