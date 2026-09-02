@@ -188,30 +188,11 @@ export async function selectSharePermissionPreset(shareId: string, presetClass: 
  */
 export async function updateShareRecipientPermission(shareId: string, recipientClass: string, recipientValue: string, permissionClass: string, enabled: boolean, instance?: string): Promise<SharingShare> {
 	const response = await axios.put(sharingUrl(`/share/${shareId}/recipient/permission`), {
-		class: recipientClass,
-		value: recipientValue,
-		instance: instance ?? null,
+		recipientClass,
+		recipientValue,
+		recipientInstance: instance ?? null,
 		permissionClass,
 		enabled,
-	})
-	return unwrapOcs<SharingShare>(response)
-}
-
-/**
- * Apply a permission preset to one recipient of a share.
- *
- * @param shareId
- * @param recipientClass
- * @param recipientValue
- * @param presetClass
- * @param instance
- */
-export async function selectShareRecipientPermissionPreset(shareId: string, recipientClass: string, recipientValue: string, presetClass: string, instance?: string): Promise<SharingShare> {
-	const response = await axios.put(sharingUrl(`/share/${shareId}/recipient/permission/preset`), {
-		class: recipientClass,
-		value: recipientValue,
-		instance: instance ?? null,
-		permissionPresetClass: presetClass,
 	})
 	return unwrapOcs<SharingShare>(response)
 }

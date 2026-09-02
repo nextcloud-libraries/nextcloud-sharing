@@ -21,7 +21,6 @@ const bob: SharingRecipient = {
 	icon: null,
 	secret: { updatable: false },
 	initiator: null,
-	permission_preset: null,
 	permissions: [],
 }
 

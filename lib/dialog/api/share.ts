@@ -198,18 +198,6 @@ class Share {
 	}
 
 	/**
-	 * Apply a permission preset to one recipient.
-	 *
-	 * @param recipientClass The recipient type class
-	 * @param recipientValue The recipient value
-	 * @param presetClass The preset class to apply
-	 * @param instance The recipient's instance (federated shares)
-	 */
-	async selectRecipientPreset(recipientClass: string, recipientValue: string, presetClass: string, instance?: string): Promise<this> {
-		return this.#sync(await client.selectShareRecipientPermissionPreset(this.id, recipientClass, recipientValue, presetClass, instance))
-	}
-
-	/**
 	 * Set the share state (draft → active → deleted).
 	 *
 	 * @param state The new state

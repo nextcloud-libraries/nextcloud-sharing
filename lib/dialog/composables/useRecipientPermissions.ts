@@ -61,18 +61,33 @@ export function useRecipientPermissions(share: Share, getRecipient: () => Sharin
 		]
 	})
 
-	const selectedPreset = computed<PresetOption>(() => presetOptions.value.find((option) => option.value === recipient.value.permission_preset) ?? customOption)
-
-	const showPermissions = computed(() => selectedPreset.value.value === CUSTOM_VALUE)
-
 	const permissions = computed<RecipientPermission[]>(() => {
 		const max = shareMax.value
-		// The backend may not (yet) return per-recipient permissions.
 		return (recipient.value.permissions ?? []).map((permission) => ({
 			...permission,
 			available: max.has(permission.class),
 		}))
 	})
+
+	/**
+	 * Recipients carry permissions but no preset field, so the preset is the one
+	 * whose member permissions are exactly the enabled ones (custom otherwise).
+	 */
+	const selectedPreset = computed<PresetOption>(() => {
+		const enabled = new Set(permissions.value.filter((permission) => permission.enabled).map((permission) => permission.class))
+		for (const option of presetOptions.value) {
+			if (option.value === CUSTOM_VALUE) {
+				continue
+			}
+			const members = permissions.value.filter((permission) => permission.presets.includes(option.value))
+			if (members.length > 0 && members.length === enabled.size && members.every((permission) => enabled.has(permission.class))) {
+				return option
+			}
+		}
+		return customOption
+	})
+
+	const showPermissions = computed(() => selectedPreset.value.value === CUSTOM_VALUE)
 
 	/** Whether any permission is beyond the share max (drives the cap notice). */
 	const hasCap = computed(() => permissions.value.some((permission) => !permission.available))
@@ -113,11 +128,22 @@ export function useRecipientPermissions(share: Share, getRecipient: () => Sharin
 		}
 		presetError.value = null
 		const r = recipient.value
-		try {
-			await share.selectRecipientPreset(r.class, r.value, option.value, r.instance ?? undefined)
-		} catch (e) {
-			logger.error('Failed to select recipient permission preset', { error: e, recipient: r.value, preset: option.value })
-			presetError.value = getOcsErrorMessage(e)
+		// There is no per-recipient preset endpoint: apply the preset by toggling
+		// each permission to match it, skipping any beyond the share maximum.
+		const target = new Set(permissions.value.filter((permission) => permission.presets.includes(option.value)).map((permission) => permission.class))
+		const snapshot = permissions.value.map(({ class: permissionClass, enabled, available }) => ({ permissionClass, enabled, available }))
+		for (const { permissionClass, enabled, available } of snapshot) {
+			const shouldEnable = target.has(permissionClass)
+			if (!available || enabled === shouldEnable) {
+				continue
+			}
+			try {
+				await share.setRecipientPermission(r.class, r.value, permissionClass, shouldEnable, r.instance ?? undefined)
+			} catch (e) {
+				logger.error('Failed to apply recipient permission preset', { error: e, recipient: r.value, permission: permissionClass })
+				presetError.value = getOcsErrorMessage(e)
+				return
+			}
 		}
 	}
 

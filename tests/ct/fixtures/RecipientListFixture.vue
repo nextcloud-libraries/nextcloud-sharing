@@ -23,7 +23,6 @@ function recipient(cls: string, value: string, displayName: string): SharingReci
 		icon: null,
 		secret: { updatable: false },
 		initiator: null,
-		permission_preset: null,
 		permissions: [],
 	}
 }

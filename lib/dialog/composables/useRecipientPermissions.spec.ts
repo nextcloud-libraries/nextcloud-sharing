@@ -40,7 +40,6 @@ function recipient(overrides: Partial<SharingRecipient> = {}): SharingRecipient 
 		icon: null,
 		secret: { updatable: false },
 		initiator: null,
-		permission_preset: null,
 		permissions: [],
 		...overrides,
 	}
@@ -51,7 +50,6 @@ function fakeShare(permissions: SharingPermission[], preset: string | null = nul
 		permissions,
 		permissionPreset: preset,
 		data: { owner },
-		selectRecipientPreset: vi.fn().mockResolvedValue(undefined),
 		setRecipientPermission: vi.fn().mockResolvedValue(undefined),
 	} as unknown as Share
 }
@@ -78,9 +76,14 @@ describe('permissions', () => {
 })
 
 describe('selectedPreset', () => {
-	test('falls back to custom when the recipient preset is not offered', () => {
-		const { selectedPreset } = useRecipientPermissions(cappedShare(), () => recipient({ permission_preset: 'Edit' }))
-		expect(selectedPreset.value.value).toBe(CUSTOM_VALUE)
+	test('derives the preset from the enabled permissions', () => {
+		const r = recipient({ permissions: [permission('read', true, ['View', 'Edit'])] })
+		expect(useRecipientPermissions(cappedShare(), () => r).selectedPreset.value.value).toBe('View')
+	})
+
+	test('falls back to custom when no preset matches the enabled permissions', () => {
+		const r = recipient({ permissions: [permission('read', false, ['View', 'Edit'])] })
+		expect(useRecipientPermissions(cappedShare(), () => r).selectedPreset.value.value).toBe(CUSTOM_VALUE)
 	})
 })
 
@@ -111,12 +114,17 @@ describe('mutations', () => {
 		share = cappedShare()
 	})
 
-	test('onPresetChange forwards to the share, skipping custom', async () => {
-		const { onPresetChange } = useRecipientPermissions(share, () => recipient())
+	test('onPresetChange applies the preset by toggling permissions', async () => {
+		const r = recipient({ permissions: [permission('read', false, ['View', 'Edit']), permission('write', false, ['Edit'])] })
+		const { onPresetChange } = useRecipientPermissions(share, () => r)
+
 		await onPresetChange({ value: CUSTOM_VALUE, label: 'Can…' })
-		expect(share.selectRecipientPreset).not.toHaveBeenCalled()
+		expect(share.setRecipientPermission).not.toHaveBeenCalled()
+
 		await onPresetChange({ value: 'View', label: 'Can view' })
-		expect(share.selectRecipientPreset).toHaveBeenCalledWith('UserRecipient', 'carol', 'View', undefined)
+		// read belongs to the preset and is within the share max; write is over it.
+		expect(share.setRecipientPermission).toHaveBeenCalledWith('UserRecipient', 'carol', 'read', true, undefined)
+		expect(share.setRecipientPermission).toHaveBeenCalledTimes(1)
 	})
 
 	test('onPermissionToggle forwards to the share', async () => {

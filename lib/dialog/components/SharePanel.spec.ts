@@ -79,7 +79,6 @@ function schema(overrides: Partial<SharingShare> = {}): SharingShare {
 			{ class: PERM_READ, source_class: null, display_name: 'Read', hint: null, priority: 10, presets: [PRESET_VIEW, PRESET_EDIT], enabled: true },
 			{ class: PERM_WRITE, source_class: null, display_name: 'Write', hint: null, priority: 20, presets: [PRESET_EDIT], enabled: false },
 		],
-		permission_preset: null,
 		...overrides,
 	}
 }
@@ -178,7 +177,6 @@ describe('SharePanel tab bar', () => {
 		icon: null,
 		secret: { updatable: false },
 		initiator: null,
-		permission_preset: null,
 		permissions: [],
 	}
 
