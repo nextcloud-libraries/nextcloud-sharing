@@ -6,7 +6,9 @@
 	<form class="share-panel" @submit.prevent>
 		<!-- First page view -->
 		<template v-if="!inSettings">
+			<!-- The share type is committed once the share has been sent -->
 			<NcRadioGroup
+				v-if="isDraft"
 				class="share-panel__tab-bar"
 				:modelValue="shareDialogTab"
 				:label="t('Share type')"
@@ -216,6 +218,9 @@ const isLinkShare = computed(() => shareDialogTab.value === ShareDialogTab.Anyon
 
 // A share cannot be submitted without at least one recipient.
 const canSubmit = computed(() => props.share.recipients.length > 0)
+
+// The share type can only be changed before the share is sent.
+const isDraft = computed(() => props.share.state === 'draft')
 
 // Invited people: every recipient except the link (token) one.
 const invitedRecipients = computed(() => props.share.recipients.filter((recipient) => recipient.class !== RECIPIENT_TYPE_TOKEN))

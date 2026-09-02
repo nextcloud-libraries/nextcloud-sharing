@@ -180,10 +180,15 @@ describe('SharePanel tab bar', () => {
 		permissions: [],
 	}
 
-	it('always shows the share-type tabs', () => {
+	it('shows the share-type tabs while the share is a draft', () => {
 		expect(mountPanel().wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
 		const withRecipient = mountPanel(schema({ recipients: [recipient] }))
 		expect(withRecipient.wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(true)
+	})
+
+	it('hides the share-type tabs once the share has been sent', () => {
+		const { wrapper } = mountPanel(schema({ state: 'active' }))
+		expect(wrapper.findComponent({ name: 'NcRadioGroup' }).exists()).toBe(false)
 	})
 
 	it('confirms and drops invited people when switching to the link tab', async () => {
