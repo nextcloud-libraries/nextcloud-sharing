@@ -53,7 +53,7 @@
 				class="recipient-row__editor"
 				:presetOptions="presetOptions"
 				:selectedPreset="selectedPreset"
-				:showPermissions="showPermissions"
+				:showPermissions="true"
 				:permissions="permissions"
 				:permissionErrors="permissionErrors"
 				:presetError="presetError"
@@ -101,7 +101,6 @@ const isNoUser = computed(() => props.recipient.class !== RECIPIENT_TYPE_USER)
 const {
 	presetOptions,
 	selectedPreset,
-	showPermissions,
 	permissions,
 	notice,
 	permissionErrors,
