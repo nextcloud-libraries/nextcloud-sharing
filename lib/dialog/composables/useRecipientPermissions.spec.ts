@@ -133,3 +133,25 @@ describe('mutations', () => {
 		expect(share.setRecipientPermission).toHaveBeenCalledWith('UserRecipient', 'carol', 'read', true, undefined)
 	})
 })
+
+describe('share permissions as the base', () => {
+	test('a recipient without overrides inherits the share permissions', () => {
+		const { permissions } = useRecipientPermissions(cappedShare(), () => recipient())
+		expect(permissions.value.find((p) => p.class === 'read')!.enabled).toBe(true)
+		expect(permissions.value.find((p) => p.class === 'write')!.enabled).toBe(false)
+	})
+
+	test('recipient overrides are applied on top of the share', () => {
+		const r = recipient({ permissions: [permission('read', false, ['View', 'Edit'])] })
+		const { permissions } = useRecipientPermissions(cappedShare(), () => r)
+		expect(permissions.value.find((p) => p.class === 'read')!.enabled).toBe(false)
+	})
+
+	test('applies a preset to a recipient that has no overrides yet', async () => {
+		// Share grants both, so the recipient inherits both; "View" must turn write off.
+		const share = fakeShare([permission('read', true, ['View', 'Edit']), permission('write', true, ['Edit'])])
+		const { onPresetChange } = useRecipientPermissions(share, () => recipient())
+		await onPresetChange({ value: 'View', label: 'Can view' })
+		expect(share.setRecipientPermission).toHaveBeenCalledWith('UserRecipient', 'carol', 'write', false, undefined)
+	})
+})

@@ -61,11 +61,18 @@ export function useRecipientPermissions(share: Share, getRecipient: () => Sharin
 		]
 	})
 
+	/**
+	 * A recipient's permissions are sparse overrides: the share's permissions are
+	 * the base (and the maximum), and a recipient entry overrides one of them.
+	 * Overlay both to get the effective state.
+	 */
 	const permissions = computed<RecipientPermission[]>(() => {
-		const max = shareMax.value
-		return (recipient.value.permissions ?? []).map((permission) => ({
+		const overrides = new Map((recipient.value.permissions ?? []).map((permission) => [permission.class, permission]))
+		return share.permissions.map((permission) => ({
 			...permission,
-			available: max.has(permission.class),
+			enabled: overrides.get(permission.class)?.enabled ?? permission.enabled,
+			// The share must grant a permission before a recipient can have it.
+			available: permission.enabled,
 		}))
 	})
 
