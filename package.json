@@ -89,9 +89,8 @@
     "vue": "^3.5.42",
     "vue-tsc": "^3.3.11"
   },
-  "peerDependencies": {},
   "engines": {
-    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
+    "node": "^22.0.0 || ^24.0.0 || >=26"
   },
   "devEngines": {
     "packageManager": [
