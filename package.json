@@ -79,7 +79,7 @@
     "@vue/test-utils": "^2.5.0",
     "eslint": "^10.10.0",
     "gettext-parser": "^9.1.1",
-    "happy-dom": "^20.12.2",
+    "happy-dom": "^20.14.0",
     "sass-embedded": "^1.104.0",
     "typedoc": "^0.28.20",
     "typescript": "^6.0.3",
