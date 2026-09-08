@@ -469,7 +469,10 @@ form.share-panel {
 	z-index: 2;
 	background-color: var(--color-main-background);
 	border-block-start: 1px solid var(--color-border);
+	// Match the form's vertical padding so the bar does not float above the content.
 	padding-block: calc(var(--default-grid-baseline) * 3);
+	// Stick it to the bottom of the form
+	margin-block-start: auto;
 	// Cancel the form's bottom padding so the bar sits flush at the bottom.
 	margin-block-end: calc(var(--default-grid-baseline) * -3);
 }
