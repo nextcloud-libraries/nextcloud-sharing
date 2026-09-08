@@ -84,7 +84,7 @@
     "typedoc": "^0.28.20",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
-    "vue": "^3.5.41",
+    "vue": "^3.5.42",
     "vue-tsc": "^3.3.11"
   },
   "peerDependencies": {
