@@ -61,10 +61,12 @@
     "@nextcloud/l10n": "^3.4.1",
     "@nextcloud/logger": "^3.0.3",
     "@nextcloud/router": "^3.1.0",
+    "@nextcloud/vue": "^9.11.0",
     "debounce": "^3.0.0",
     "is-svg": "^6.1.0",
     "qrcode.vue": "^3.10.0",
-    "uuid": "^14.0.2"
+    "uuid": "^14.0.2",
+    "vue": "^3.5.0"
   },
   "devDependencies": {
     "@nextcloud/eslint-config": "^9.0.1",
@@ -87,10 +89,7 @@
     "vue": "^3.5.42",
     "vue-tsc": "^3.3.11"
   },
-  "peerDependencies": {
-    "@nextcloud/vue": "^9.0.0",
-    "vue": "^3.5.0"
-  },
+  "peerDependencies": {},
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
