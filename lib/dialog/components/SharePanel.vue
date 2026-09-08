@@ -56,9 +56,8 @@
 			<!-- First-page properties (e.g. Note to recipients) -->
 			<template v-for="property in firstPageProperties" :key="property.class">
 				<InlineToggleField
-					v-if="isOptionalProperty(property)"
+					v-if="isOptionalProperty(property) && !isLongTextProperty(property)"
 					:label="property.display_name"
-					:longText="isLongTextProperty(property)"
 					:modelValue="property.value !== null"
 					@update:modelValue="(enabled) => toggleOptionalProperty(property, enabled)">
 					<template #default="{ inputId }">
@@ -140,9 +139,8 @@
 
 			<template v-for="property in settingsProperties" :key="property.class">
 				<InlineToggleField
-					v-if="isOptionalProperty(property)"
+					v-if="isOptionalProperty(property) && !isLongTextProperty(property)"
 					:label="property.display_name"
-					:longText="isLongTextProperty(property)"
 					:modelValue="property.value !== null"
 					@update:modelValue="(enabled) => toggleOptionalProperty(property, enabled)">
 					<template #default="{ inputId }">

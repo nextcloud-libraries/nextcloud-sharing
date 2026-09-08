@@ -18,7 +18,7 @@ const TOGGLE_INPUT = '.inline-toggle-field__toggle input'
  *
  * @param props Component props
  */
-function mountField(props: { modelValue: boolean, label?: string, longText?: boolean }): VueWrapper {
+function mountField(props: { modelValue: boolean, label?: string }): VueWrapper {
 	return mount(InlineToggleField, {
 		props: { label: 'Note', ...props },
 		slots: {
@@ -100,11 +100,6 @@ describe('InlineToggleField', () => {
 			attachTo: document.body,
 		})
 		await expect(wrapper.find(TOGGLE_INPUT).setValue(true)).resolves.not.toThrow()
-	})
-
-	it('adds the long-text class on the toggle when longText is set', () => {
-		const wrapper = mountField({ modelValue: true, longText: true })
-		expect(wrapper.find('.inline-toggle-field__toggle--long-text').exists()).toBe(true)
 	})
 
 	it('exposes the group aria-label and wires the slot input id', () => {
