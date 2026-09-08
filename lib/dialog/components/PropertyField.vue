@@ -108,7 +108,7 @@ import type { SharingProperty } from '../types/api.ts'
 
 import IconInformationOutline from '@mdi/svg/svg/information-outline.svg?raw'
 import debounce from 'debounce'
-import { nextTick, ref, useTemplateRef } from 'vue'
+import { nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import NcDateTimePickerNative from '@nextcloud/vue/components/NcDateTimePickerNative'
 import NcFormBox from '@nextcloud/vue/components/NcFormBox'
 import NcFormBoxSwitch from '@nextcloud/vue/components/NcFormBoxSwitch'
@@ -160,6 +160,10 @@ function parseISODate(value: string | null | undefined): Date | undefined {
 }
 
 const debouncedPersist = debounce(persistValue, 500)
+
+// A field without a toggle is unset by clearing it, so a pending edit must not
+// be lost when the dialog closes right after typing.
+onBeforeUnmount(() => debouncedPersist.flush())
 
 /**
  * Update the local value immediately and schedule a debounced persist.

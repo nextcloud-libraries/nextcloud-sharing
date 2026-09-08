@@ -23,7 +23,6 @@
 			:aria-controls="inputId"
 			:aria-label="label"
 			class="inline-toggle-field__toggle"
-			:class="{ 'inline-toggle-field__toggle--long-text': longText }"
 			type="switch"
 			@update:modelValue="onToggleEnabled" />
 	</div>
@@ -39,8 +38,6 @@ const modelValue = defineModel<boolean>({ default: false })
 defineProps<{
 	/** Accessible label of the field group and its toggle */
 	label: string
-	/** Align the toggle to the first line of a multi-line field (e.g. textarea) */
-	longText?: boolean
 }>()
 
 const inputId = `property-input-${Math.random().toString(36).slice(2, 9)}`
@@ -87,11 +84,6 @@ async function onToggleEnabled(enabled: boolean) {
 
 	&__toggle {
 		height: var(--default-clickable-area);
-
-		&--long-text {
-			align-self: flex-start;
-			margin-top: 6px;
-		}
 	}
 }
 </style>

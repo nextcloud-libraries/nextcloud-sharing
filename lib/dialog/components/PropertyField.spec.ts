@@ -164,6 +164,34 @@ describe('PropertyField persistence', () => {
 		expect(mockedUpdate).toHaveBeenCalledWith(PROPERTY_CLASS, 'Hey')
 	})
 
+	it('unsets the property when the field is cleared', async () => {
+		const wrapper = mount(PropertyField, {
+			props: { property: property({ value: 'Old note' }), share: shareMock, modelValue: 'Old note' },
+			attachTo: document.body,
+		})
+		const input = wrapper.find('input[type="text"]')
+		vi.spyOn(input.element as HTMLInputElement, 'checkValidity').mockReturnValue(true)
+
+		// There is no toggle to switch off: clearing the text is how a property
+		// without one gets unset.
+		await input.setValue('')
+		await vi.advanceTimersByTimeAsync(500)
+
+		expect(mockedUpdate).toHaveBeenCalledWith(PROPERTY_CLASS, null)
+	})
+
+	it('dispatches a pending edit when the field goes away', async () => {
+		const wrapper = mountField()
+		const input = wrapper.find('input[type="text"]')
+		vi.spyOn(input.element as HTMLInputElement, 'checkValidity').mockReturnValue(true)
+
+		await input.setValue('Hello')
+		// Closing the dialog right after typing must not drop the edit.
+		wrapper.unmount()
+
+		expect(mockedUpdate).toHaveBeenCalledWith(PROPERTY_CLASS, 'Hello')
+	})
+
 	it('skips the request and reports validity when the input is invalid', async () => {
 		const wrapper = mountField()
 		const input = wrapper.find('input[type="text"]')

@@ -8,7 +8,7 @@ import type { SharingShare } from '../types/api.ts'
 import { flushPromises, shallowMount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SharePanel from './SharePanel.vue'
-import { PROPERTY_EXPIRATION, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, RECIPIENT_TYPE_USER, SOURCE_TYPE_NODE } from '../constants.ts'
+import { PROPERTY_EXPIRATION, PROPERTY_NOTE, PROPERTY_PASSWORD, RECIPIENT_TYPE_TOKEN, RECIPIENT_TYPE_USER, SOURCE_TYPE_NODE } from '../constants.ts'
 import { ShareDialogTab } from '../types/ui.ts'
 
 const PRESET_VIEW = 'preset-view'
@@ -275,6 +275,39 @@ describe('SharePanel submit', () => {
 		const submitted = wrapper.emitted('submitted')
 		expect(submitted).toHaveLength(1)
 		expect(submitted![0][0]).toMatchObject({ isPublic: false })
+	})
+})
+
+describe('SharePanel properties', () => {
+	/** A note property: free text, long enough to render as a textarea. */
+	const note = (value: string | null) => ({
+		class: PROPERTY_NOTE,
+		display_name: 'Note to recipients',
+		hint: null,
+		priority: 9,
+		required: false,
+		max_length: 1000,
+		value,
+		type: 'string' as const,
+	})
+
+	it('offers free text without a toggle, editable while empty', () => {
+		const { wrapper } = mountPanel(schema({ properties: [note(null)] }))
+
+		// Nothing to switch on first: an empty field already says "no note".
+		expect(wrapper.findComponent({ name: 'InlineToggleField' }).exists()).toBe(false)
+		const field = wrapper.findComponent({ name: 'PropertyField' })
+		expect(field.exists()).toBe(true)
+		expect(field.props('disabled')).toBeFalsy()
+	})
+
+	it('keeps the toggle for properties that are not free text', () => {
+		const { wrapper } = mountPanel(schema({
+			properties: [{ class: PROPERTY_PASSWORD, display_name: 'Password', hint: null, priority: 6, required: false, value: null, type: 'password' }],
+		}), { inSettings: true })
+
+		// A password is meaningfully "on with no value yet", so it keeps its switch.
+		expect(wrapper.findComponent({ name: 'InlineToggleField' }).exists()).toBe(true)
 	})
 })
 

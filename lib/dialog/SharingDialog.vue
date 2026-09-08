@@ -216,9 +216,6 @@ onMounted(async () => {
 		// changes (switching tabs, adding recipients, revealing toggles).
 		min-height: min(320px, 50vh);
 		overflow-y: auto;
-		// Match the dialog's inline padding at the bottom (its content has none),
-		// so the form does not sit flush against the edge.
-		padding-block-end: calc(var(--default-grid-baseline) * 3);
 	}
 
 	&__loading,

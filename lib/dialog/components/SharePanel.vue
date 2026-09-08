@@ -56,9 +56,8 @@
 			<!-- First-page properties (e.g. Note to recipients) -->
 			<template v-for="property in firstPageProperties" :key="property.class">
 				<InlineToggleField
-					v-if="isOptionalProperty(property)"
+					v-if="isOptionalProperty(property) && !isLongTextProperty(property)"
 					:label="property.display_name"
-					:longText="isLongTextProperty(property)"
 					:modelValue="property.value !== null"
 					@update:modelValue="(enabled) => toggleOptionalProperty(property, enabled)">
 					<template #default="{ inputId }">
@@ -140,9 +139,8 @@
 
 			<template v-for="property in settingsProperties" :key="property.class">
 				<InlineToggleField
-					v-if="isOptionalProperty(property)"
+					v-if="isOptionalProperty(property) && !isLongTextProperty(property)"
 					:label="property.display_name"
-					:longText="isLongTextProperty(property)"
 					:modelValue="property.value !== null"
 					@update:modelValue="(enabled) => toggleOptionalProperty(property, enabled)">
 					<template #default="{ inputId }">
@@ -469,7 +467,10 @@ form.share-panel {
 	z-index: 2;
 	background-color: var(--color-main-background);
 	border-block-start: 1px solid var(--color-border);
+	// Match the form's vertical padding so the bar does not float above the content.
 	padding-block: calc(var(--default-grid-baseline) * 3);
+	// Stick it to the bottom of the form
+	margin-block-start: auto;
 	// Cancel the form's bottom padding so the bar sits flush at the bottom.
 	margin-block-end: calc(var(--default-grid-baseline) * -3);
 }
