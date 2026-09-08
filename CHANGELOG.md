@@ -7,6 +7,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0-beta.3 - 2026-09-08
+Third beta of the 1.0 line. Published on npm under the `next` tag.
+
+### Changed
+* fix(deps): ship `vue` and `@nextcloud/vue` as dependencies instead of peer dependencies, so the dialog can be imported directly from a Vue 2 app [\#276](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/276)
+* build: require `@nextcloud/vue` `^9.11.0`, the first release in which the multiple recipient select renders at the same width as the other selects [\#276](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/276)
+* chore: drop node 20 from the supported engines [\#277](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/277)
+
+### Fixed
+* fix(dialog): free text properties lose their toggle; the field is always editable and an empty one means the property is unset [\#275](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/275)
+* fix(dialog): the action bars stick to the bottom of the panel instead of floating above short forms [\#275](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/275)
+
 ## 1.0.0-beta.2 - 2026-09-02
 Second beta of the 1.0 line. Published on npm under the `next` tag.
 
