@@ -7,6 +7,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0-beta.4 - 2026-09-09
+Fourth beta of the 1.0 line. Published on npm under the `next` tag.
+
+### Fixed
+* fix(dialog): the sharee is called "recipient" everywhere, instead of a mix of people, participants and recipients [\#288](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/288)
+* fix(dialog): the dialog scrolls its own content, so the scrollbar sits at its edge instead of floating over the form [\#287](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/287)
+* fix(dialog): the recipient menu closes when it opens the permissions modal, instead of overlapping it [\#286](https://github.com/nextcloud-libraries/nextcloud-sharing/pull/286)
+
 ## 1.0.0-beta.3 - 2026-09-08
 Third beta of the 1.0 line. Published on npm under the `next` tag.
 
