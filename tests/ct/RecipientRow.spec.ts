@@ -29,4 +29,6 @@ test('opens the custom permissions modal from the menu', async ({ mount, page })
 	await component.getByRole('button', { name: 'Recipient actions' }).click()
 	await page.getByRole('menuitem', { name: 'Custom permissions' }).click()
 	await expect(page.getByRole('dialog')).toBeVisible()
+	// The menu has to get out of the way, or it overlaps the modal it opened.
+	await expect(page.getByRole('menu')).toHaveCount(0)
 })
