@@ -30,7 +30,7 @@
 					:modelValue="selectedRecipients"
 					class="share-panel__recipient-search"
 					:multiple="true"
-					:inputLabel="t('Add people')"
+					:inputLabel="t('Add recipient')"
 					:options="results"
 					:loading="searching"
 					:placeholder="t('Name, team, email or federated cloud ID')"
@@ -241,17 +241,17 @@ const isDraft = computed(() => props.share.state === 'draft')
 const invitedRecipients = computed(() => props.share.recipients.filter((recipient) => recipient.class !== RECIPIENT_TYPE_TOKEN))
 
 /**
- * Ask before dropping the invited people when switching to a public link.
+ * Ask before dropping the recipients when switching to a public link.
  *
- * @param count Number of invited people that would be removed
+ * @param count Number of recipients that would be removed
  */
 async function confirmDropInvited(count: number): Promise<boolean> {
 	let confirmed = false
 	const dialog = (new DialogBuilder())
 		.setName(t('Share with anyone'))
 		.setText(n(
-			'Switching to a public link removes %n invited person from this share.',
-			'Switching to a public link removes %n invited people from this share.',
+			'Switching to a public link removes %n recipient from this share.',
+			'Switching to a public link removes %n recipients from this share.',
 			count,
 		))
 		.setButtons([
@@ -278,7 +278,7 @@ async function confirmDropInvited(count: number): Promise<boolean> {
 }
 
 /**
- * Switch the share type. A public link cannot keep invited people, so confirm
+ * Switch the share type. A public link cannot keep its recipients, so confirm
  * and remove them first.
  *
  * @param tab The tab to switch to

@@ -20,7 +20,7 @@ test('removes the recipient from the menu', async ({ mount, page }) => {
 	}
 	const component = await mount(Fixture, { on: { removed: onRemoved } })
 	await component.getByRole('button', { name: 'Recipient actions' }).click()
-	await page.getByRole('menuitem', { name: 'Remove participant' }).click()
+	await page.getByRole('menuitem', { name: 'Remove recipient' }).click()
 	expect(removed).toBe(true)
 })
 

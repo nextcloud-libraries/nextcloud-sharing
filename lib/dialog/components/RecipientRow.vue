@@ -40,7 +40,7 @@
 				<template #icon>
 					<NcIconSvgWrapper :svg="IconDelete" :size="20" />
 				</template>
-				{{ t('Remove participant') }}
+				{{ t('Remove recipient') }}
 			</NcActionButton>
 		</NcActions>
 
