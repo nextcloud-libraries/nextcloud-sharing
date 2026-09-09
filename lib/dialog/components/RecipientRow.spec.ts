@@ -48,10 +48,10 @@ function mountRow(r: SharingRecipient = recipient()) {
 	return { wrapper, share }
 }
 
-/** Click the "Remove participant" action, found by its label. */
+/** Click the "Remove recipient" action, found by its label. */
 async function clickRemove(wrapper: ReturnType<typeof mountRow>['wrapper']) {
 	const action = wrapper.findAllComponents({ name: 'NcActionButton' })
-		.find((button) => button.text().includes('Remove participant'))
+		.find((button) => button.text().includes('Remove recipient'))
 	expect(action, 'the remove action is rendered').toBeDefined()
 	action!.vm.$emit('click')
 	await nextTick()
