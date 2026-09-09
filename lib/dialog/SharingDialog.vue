@@ -207,15 +207,12 @@ onMounted(async () => {
 		gap: calc(var(--default-grid-baseline) * 3);
 	}
 
-	// Scroll the form (everything but the fixed header/close) once it grows
-	// tall, so the scrollbar never overlaps the header. A max-height rather than
-	// flex is used so the dialog still sizes to its content when it is short.
+	// The dialog scrolls its own content, so the scrollbar sits at its edge
+	// rather than inside the form. The header stays put while it does.
 	:deep(.share-panel) {
-		max-height: 50vh;
 		// Keep a stable floor so the dialog does not jump around as the content
 		// changes (switching tabs, adding recipients, revealing toggles).
 		min-height: min(320px, 50vh);
-		overflow-y: auto;
 	}
 
 	&__loading,
@@ -249,6 +246,12 @@ onMounted(async () => {
 		}
 	}
 	.sharing-dialog__header {
+		// The dialog scrolls behind it, so keep the title and the back button in
+		// place instead of letting them scroll away.
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		background-color: var(--color-main-background);
 		display: flex;
 		align-items: center;
 		gap: calc(var(--default-grid-baseline) * 2);
