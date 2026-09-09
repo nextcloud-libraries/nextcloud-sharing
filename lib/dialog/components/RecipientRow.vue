@@ -29,7 +29,7 @@
 				</template>
 				{{ preset.label }}
 			</NcActionButton>
-			<NcActionButton @click="modalOpen = true">
+			<NcActionButton closeAfterClick @click="modalOpen = true">
 				<template #icon>
 					<NcIconSvgWrapper v-if="isCustom" :svg="IconCheck" :size="20" />
 				</template>
