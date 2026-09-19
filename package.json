@@ -82,7 +82,7 @@
     "eslint": "^10.10.0",
     "gettext-parser": "^9.1.1",
     "happy-dom": "^20.14.5",
-    "sass-embedded": "^1.104.0",
+    "sass-embedded": "^1.104.1",
     "typedoc": "^0.28.20",
     "typescript": "^6.0.3",
     "vitest": "^5.0.0",
