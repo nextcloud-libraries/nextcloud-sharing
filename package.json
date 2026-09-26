@@ -78,7 +78,7 @@
     "@types/node": "^26.6.1",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/coverage-v8": "^5.0.1",
-    "@vue/test-utils": "^2.5.0",
+    "@vue/test-utils": "^2.5.1",
     "eslint": "^10.10.0",
     "gettext-parser": "^9.1.1",
     "happy-dom": "^20.14.5",
