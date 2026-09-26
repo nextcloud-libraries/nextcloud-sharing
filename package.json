@@ -75,7 +75,7 @@
     "@nextcloud/vite-config": "^2.5.4",
     "@nextcloud/vue": "^9.12.0",
     "@playwright/experimental-ct-vue": "^1.62.1",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.2",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/coverage-v8": "^5.0.1",
     "@vue/test-utils": "^2.5.0",
