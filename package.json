@@ -80,7 +80,7 @@
     "@vitest/coverage-v8": "^5.1.0",
     "@vue/test-utils": "^2.5.0",
     "eslint": "^10.14.0",
-    "gettext-parser": "^9.1.1",
+    "gettext-parser": "^10.0.0",
     "happy-dom": "^20.14.5",
     "sass-embedded": "^1.107.1",
     "typedoc": "^0.28.20",
