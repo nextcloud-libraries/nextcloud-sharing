@@ -5,6 +5,7 @@
 
 import type { NcSelectUsersModel } from '@nextcloud/vue/components/NcSelectUsers'
 import type { Share } from '../api/share.ts'
+import type { SharingRecipient } from '../types/api.ts'
 
 import debounce from 'debounce'
 import { ref } from 'vue'
@@ -26,8 +27,8 @@ export function useRecipientSearch(share: Share) {
 	const selected = ref<NcSelectUsersModel[]>([])
 	const searching = ref(false)
 
-	// Map result user IDs back to their SharingRecipient class for API calls.
-	const recipientClassMap = new Map<string, string>()
+	// Map result IDs back to their SharingRecipient for API calls.
+	const recipientMap = new Map<string, SharingRecipient>()
 
 	/**
 	 * Add the picked recipients to the share, then clear the field.
@@ -37,12 +38,12 @@ export function useRecipientSearch(share: Share) {
 	async function onSelect(value: NcSelectUsersModel | NcSelectUsersModel[]) {
 		const models = Array.isArray(value) ? value : [value]
 		for (const model of models) {
-			const recipientClass = recipientClassMap.get(model.id)
-			if (!recipientClass || share.recipients.some((recipient) => recipient.value === model.id)) {
+			const recipient = recipientMap.get(model.id)
+			if (!recipient || share.recipients.some((existing) => recipientKey(existing) === model.id)) {
 				continue
 			}
 			try {
-				await share.addRecipient(recipientClass, model.id)
+				await share.addRecipient(recipient.class, recipient.value, recipient.instance ?? undefined)
 			} catch (e) {
 				logger.error('Failed to add recipient', { error: e, recipient: model })
 			}
@@ -52,7 +53,7 @@ export function useRecipientSearch(share: Share) {
 
 	/**
 	 * Search for recipients and cache the results, tracking each result's
-	 * recipient class so it can be added on selection.
+	 * recipient so it can be added on selection.
 	 *
 	 * @param query The search query entered by the user
 	 */
@@ -66,9 +67,9 @@ export function useRecipientSearch(share: Share) {
 		try {
 			const recipients = await searchRecipients(query)
 			for (const r of recipients) {
-				recipientClassMap.set(r.value, r.class)
+				recipientMap.set(recipientKey(r), r)
 			}
-			results.value = recipients.map(recipientToNcSelectUsersModel)
+			results.value = recipients.map((r) => ({ ...recipientToNcSelectUsersModel(r), id: recipientKey(r) }))
 		} catch (e) {
 			logger.error('Failed to search recipients', { error: e })
 			results.value = []
@@ -84,4 +85,13 @@ export function useRecipientSearch(share: Share) {
 		onSelect,
 		onSearch: debounce(onSearch, 150),
 	}
+}
+
+/**
+ * Unique key of a recipient, as the same value can exist for several classes and instances.
+ *
+ * @param recipient The recipient to build the key for
+ */
+function recipientKey(recipient: SharingRecipient): string {
+	return `${recipient.class}:${recipient.value}@${recipient.instance ?? ''}`
 }
