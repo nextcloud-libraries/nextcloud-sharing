@@ -47,7 +47,7 @@ describe('useRecipientSearch (add-only)', () => {
 		const { results, onSearch } = useRecipientSearch(fakeShare())
 		await onSearch('bo')
 		expect(results.value).toHaveLength(1)
-		expect(results.value[0].id).toBe('bob')
+		expect(results.value[0].id).toBe('UserRecipient:bob@')
 	})
 
 	test('selecting adds the recipient once and clears the field', async () => {
@@ -56,7 +56,7 @@ describe('useRecipientSearch (add-only)', () => {
 		await onSearch('bo')
 
 		await onSelect(results.value)
-		expect(share.addRecipient).toHaveBeenCalledWith('UserRecipient', 'bob')
+		expect(share.addRecipient).toHaveBeenCalledWith('UserRecipient', 'bob', undefined)
 		expect(selected.value).toEqual([])
 
 		// Already a recipient → not added again.
@@ -69,6 +69,17 @@ describe('useRecipientSearch (add-only)', () => {
 		const { results, onSearch, onSelect } = useRecipientSearch(share)
 		await onSearch('bo')
 		await onSelect(results.value[0])
-		expect(share.addRecipient).toHaveBeenCalledWith('UserRecipient', 'bob')
+		expect(share.addRecipient).toHaveBeenCalledWith('UserRecipient', 'bob', undefined)
+	})
+
+	test('adds a remote recipient with its instance', async () => {
+		searchRecipients.mockResolvedValue([bob, { ...bob, instance: 'remote.example' }])
+		const share = fakeShare()
+		const { results, onSearch, onSelect } = useRecipientSearch(share)
+		await onSearch('bo')
+		expect(results.value).toHaveLength(2)
+
+		await onSelect(results.value[1])
+		expect(share.addRecipient).toHaveBeenCalledWith('UserRecipient', 'bob', 'remote.example')
 	})
 })
