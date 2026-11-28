@@ -62,7 +62,7 @@
     "@nextcloud/logger": "^3.0.3",
     "@nextcloud/router": "^3.1.0",
     "@nextcloud/vue": "^9.14.1",
-    "debounce": "^3.0.0",
+    "debounce": "^4.0.0",
     "is-svg": "^6.1.0",
     "qrcode.vue": "^3.11.1",
     "uuid": "^14.0.3",
